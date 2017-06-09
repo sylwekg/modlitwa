@@ -1,0 +1,30 @@
+
+<div class="container-fluid">
+    <div class="row featurette justify">
+
+        {{# each data}}
+
+       	<div class=" col-md-6 col-lg-3 col-xlg-3 item">
+       		<a href="/users/profile/{{_id}}">
+	       		<div class="row">
+			        <div class="col-2 flex-center-vertically ">
+			        	<img class=" img-circle" src="/images/avatar.jpg" alt="user" width="50">
+			    	</div>
+			    	<div class="col-10  ">
+			            <h5><strong>  {{name}}</strong> </h5>
+			            <h6><i class="fa fa-envelope" aria-hidden="true"></i>  {{email}} </h6>
+			            <h6><i class="fa fa-users" aria-hidden="true"></i>  {{grupa.name}} </h6>
+			            <h6><i class="fa fa-life-ring" aria-hidden="true"></i>  {{tajemnica.name}}</h6>
+			  	    </div>
+		  		</div>
+		  	</a>
+	    </div>
+
+
+
+
+    	{{/each}}
+
+
+    </div>
+</div>

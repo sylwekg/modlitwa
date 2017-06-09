@@ -1,0 +1,68 @@
+body, html {
+  /*padding-top: 50px; !* 50 *!*/
+  height: 100%;
+  margin: 0;
+  font-family: 'Alegreya Sans', sans-serif;
+}
+
+a {
+  color: #00B7FF;
+}
+
+/* unvisited link */
+a:link {
+    color: black;
+}
+
+/* visited link */
+a:visited {
+    color: gray;
+}
+
+/* mouse over link */
+a:hover {
+    color: darkblue;
+    text-decoration: none;
+}
+
+/* selected link */
+a:active {
+    color: blue;
+}
+
+.img-circle {
+    border-radius: 50%;
+    vertical-align: middle;
+    margin: auto;
+}
+
+.justify {
+	justify-content: center;
+  display: flex;
+}
+
+.adminButton {
+  width: 5rem;
+}
+
+.item {
+  /*margin: 1px;*/
+
+  border: 1px #ccc solid;	
+  padding: 10px;
+  border-radius: 15px;
+  min-width: 20rem;
+
+}
+
+.profile {
+	padding: 5px;
+	margin: auto;
+	border-radius: 15px;
+}
+
+.flex-center-vertically {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}

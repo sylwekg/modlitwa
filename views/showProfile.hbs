@@ -1,0 +1,33 @@
+
+
+<div class="card profile" style="max-width: 30rem;" >
+  
+  <img class="card-img-top img-circle" src="/images/avatar.jpg" alt="user" width="150">
+  <div class="card-block">
+    <h4 class="card-title text-center">{{data.name}}</h4>
+    <p class="card-text"><strong>Email: </strong>{{data.email}}</p>
+    <p class="card-text"><strong>Tel: </strong>{{data.tel}}</p>
+    <p class="card-text"><strong>Tajemnica: </strong>{{data.tajemnica.name}}</p>
+    <p class="card-text"><strong>Grupa: </strong>{{data.grupa.name}}</p>
+    <p class="card-text"><strong>Join date: </strong><i id="d1">{{data.joinDate}}</i></p>
+    <p class="card-text"><strong>Last update: </strong><i id="d2">{{data.updateDate}}</i></p>
+    <div class="justify">
+      <button type="button" class="btn btn-outline-primary ">Edit</button>
+      <a href="/users/delete/{{data._id}}">
+        <button type="button" class="btn btn-outline-danger ">Delete</button>
+      </a>
+    </div>
+  </div>
+</div>
+
+
+<script type="text/javascript">
+  $( document ).ready(function() {
+    var d1 = new Date(document.getElementById('d1').innerHTML);
+    document.getElementById('d1').innerHTML=d1.toDateString();
+  });
+    $( document ).ready(function() {
+    var d2 = new Date(document.getElementById('d2').innerHTML);
+    document.getElementById('d2').innerHTML=d2.toDateString();
+  });
+</script>
