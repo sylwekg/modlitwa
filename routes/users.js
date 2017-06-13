@@ -5,6 +5,7 @@ var Tajemnica = require('../models/tajemnica');
 var Group = require('../models/group');
 
 
+
 /* GET users listing. /users */
 router.get('/', function(req, res, next) {
   var messages = req.flash('error');
@@ -117,7 +118,6 @@ router.get('/delete/:id', function(req, res, next) {
   		if(err)
   			return next(err);
   		else {
-  			console.log(user);
   			req.flash('error', ' Uzytkownik skasowany !');
     		return res.redirect('/');
   		}
@@ -137,47 +137,85 @@ router.post('/edit', function(req, res, next) {
 /* request o zmiane tejemnic /users/zmianaTajemnic  */
 //kompletnie nie dzialajacy w obecnej formie trzeba to zrobic z uzyciem promisow
 router.get('/zmianaTajemnic', function(req, res, next) {
-	var listaTajemnic;	
-	Tajemnica
-	  	.find()
-	    .exec( function(err, tajemnice) {
-	  		if(err)
-				return next(err);
-			listaTajemnic=tajemnice;
+
+	function nastepnaTajemnica(tajemnica) {
+		//console.log("nastepnaTajemnica");
+		var nowaTajemnica;
+		if (tajemnica.number<20)
+			nowaTajemnica=tajemnica.number+1;
+		else
+			nowaTajemnica=1;
+
+		return Tajemnica.findOne({'number' : nowaTajemnica}).exec();  
+	}
+	
+	function updateRecord(user) {
+			return Tajemnica.findById(user.tajemnica)
+			.then(nastepnaTajemnica)
+			.then(nextTaj => {
+				user.tajemnica = nextTaj._id;
+				return user;
+			});
+	}
+
+	function getUserRecord(userId) {
+		console.log("getUserRecord");
+		return User
+		.findById(userId)
+		.exec(function (err,user) {
+				if (err) 
+					return err;
+				else 
+					return user; 	
+			});
+	}
+
+	function updateUserRecords(userId) {
+		return getUserRecord(userId)
+		.then(updateRecord)
+		.then( user => {
+			user.save(function (err) {
+				console.log('saved');
+				if (err) {
+					console.log(err);
+					return err;
+				}
+				return user; 
+			});
 		});
+	}
+
+	function updateAllRecords(users) {
+		var promises = [];
+		for (i=0;i<users.length;i++) {
+			userId=users[i]._id;
+			promises.push( updateUserRecords(userId));
+		}
+		return Promise.all(promises);
+		// Promise.all(promises)
+		// .then( results => {
+		// 	return results;
+		// })
+		// .catch(err => {
+		// 	return err;
+		// });
+	}
+
 
 	User
-	  	.find()
-	  	.populate('tajemnica')
-	  	.exec( function(err, docs) {
-	  		if(err)
-	  			return next(err);
-	  		else {
+	.find()
+	.then(updateAllRecords)
+	.then(results => {
+		console.log("results: ",results);
+		req.flash('error', ' Zmiana tajemnic wykonana!');
+		return res.redirect('/');
+	})
+	.catch(err => {
+		return next(err);
+	});
 
 
-	  			for(var i=0; i<docs.length; i++) {
-	  				var index;
-	  				if(docs[i].tajemnica.number<5) 
-	  					index = docs[i].tajemnica.number+1;
-	  				else
-	  					index=1;
-	  				console.log('modyfikowany dokument : ',docs[i]);
-	  				
-		  			docs[i].tajemnica=listaTajemnic[xxx]
-		  			docs[i].save(function(err, updated) {
-				  		if(err)
-				  			return next(err)
-				  		console.log('zmiana OK');
-				  		});	
-		  		
-					  		
-					  			
-	  			}
-	  			 //update kazdego recordu z numerem tajemnicy +1
-	  		} 			 
-	  });
 });
-
 
 
 
