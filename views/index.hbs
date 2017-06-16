@@ -11,11 +11,11 @@
     <div class="row featurette">
 		<div class="card profile" style="width: 30rem;">
 		  <div class="card-header">
-		    <h3 class="justify">Admin Panel</h3>
+		    <h3 class="justify" id="adminPanel">Admin Panel</h3>
 		  </div> 
 		  <div class="card-block justify"> <a href="/users" class="btn btn-secondary btn-block"> <i class="fa fa-user" aria-hidden="true"></i> Show Users</a></div>
 		  <div class="card-block justify"> <a href="/groups" class="btn btn-secondary btn-block"> <i class="fa fa-users" aria-hidden="true"></i> Show Groups</a></div>
-		  <div class="card-block justify"> <a href="#" class="btn btn-secondary btn-block"> <i class="fa fa-envelope-o" aria-hidden="true"></i> Send e-mail to ALL</a></div>
+		  <div class="card-block justify"> <a href="/users/sendEmailToAll" class="btn btn-secondary btn-block"> <i class="fa fa-envelope-o" aria-hidden="true"></i> Send e-mail to ALL</a></div>
 		  <div class="card-block justify"> <a href="/users/zmianaTajemnic" class="btn btn-secondary btn-block"> <i class="fa fa-repeat" aria-hidden="true"></i> Zmiana tajemnic</a></div>
 		  </div>
 		</div>
@@ -28,5 +28,13 @@ $( document ).ready(function() {
 	$('#errMsg').delay(5000).slideUp();
 
 });
+
+$("#adminPanel").dblclick(function(){
+    toggleFullScreen();
+});
+
+// if( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) ) {
+//     // some code..
+// }
 
 </script>

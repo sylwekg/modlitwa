@@ -4,7 +4,7 @@ var User = require('../models/user');
 var Tajemnica = require('../models/tajemnica');
 var Group = require('../models/group');
 
-
+const nodemailer = require('nodemailer');
 
 /* GET users listing. /users */
 router.get('/', function(req, res, next) {
@@ -150,12 +150,21 @@ router.get('/zmianaTajemnic', function(req, res, next) {
 	}
 	
 	function updateRecord(user) {
+		console.log("od aktualizacji minelo :",(Date.now() - user.updateDate)/(1000*60*60)," godzin");
+		if( (Date.now() - user.updateDate) <  1000*60*60  ) { //mniej niz 1 godzina
+			var err = new Error(`User ${user.email} byl juz aktualizowany.`);
+			throw err;
+		} else {
 			return Tajemnica.findById(user.tajemnica)
 			.then(nastepnaTajemnica)
 			.then(nextTaj => {
 				user.tajemnica = nextTaj._id;
+				user.updateDate = Date.now();
 				return user;
 			});
+		}
+			
+
 	}
 
 	function getUserRecord(userId) {
@@ -173,15 +182,21 @@ router.get('/zmianaTajemnic', function(req, res, next) {
 	function updateUserRecords(userId) {
 		return getUserRecord(userId)
 		.then(updateRecord)
-		.then( user => {
-			user.save(function (err) {
-				console.log('saved');
-				if (err) {
-					console.log(err);
-					return err;
-				}
-				return user; 
-			});
+		.then( user => { // obsługa błędu
+			console.log("user :",user);
+			if(user instanceof User)  {
+				user.save(function (err) {
+					console.log('saved');
+					if (err) {
+						console.log(err);
+						return err;
+					}
+					return user;  
+				});	
+			}
+		// })
+		// .catch(err => {
+		// 	req.flash('error', err);
 		});
 	}
 
@@ -192,13 +207,6 @@ router.get('/zmianaTajemnic', function(req, res, next) {
 			promises.push( updateUserRecords(userId));
 		}
 		return Promise.all(promises);
-		// Promise.all(promises)
-		// .then( results => {
-		// 	return results;
-		// })
-		// .catch(err => {
-		// 	return err;
-		// });
 	}
 
 
@@ -211,11 +219,81 @@ router.get('/zmianaTajemnic', function(req, res, next) {
 		return res.redirect('/');
 	})
 	.catch(err => {
-		return next(err);
+		req.flash('error', err.message);
+		return res.redirect('/');
+		//return next(err);
 	});
 
 
 });
+
+//emailing /users/sendEmailToAll
+router.get('/sendEmailToAll', function(req, res, next) {
+
+	process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
+	// create reusable transporter object using the default SMTP transport
+	let transporter = nodemailer.createTransport({
+	    host: 'poczta.o2.pl',
+	    port: 465,
+	    pool: true,
+	    secure: true, // secure:true for port 465, secure:false for port 587
+	    auth: {
+	        user: 'messaging.system@o2.pl',
+	        pass: 'sender123'
+	    }
+	});
+
+
+	function wyslijEmail(user) {
+		return new Promise((resolve, reject) => { 
+			// setup email data with unicode symbols
+			let mailOptions = {
+			    from: '" Kółko różańcowe "  <messaging.system@o2.pl>', // sender address
+			    to: user.email, // list of receivers
+			    subject: 'Zmiana tajemnic', // Subject line
+			    //text: 'Hello world ?', // plain text body
+			    html: ` Witaj ${user.name},<br><br> 
+			    		Twoja nowa tajemnica to <b> ${user.tajemnica.name}.</b><br><br>
+			    		Pozdrawiam.` // html body
+			};
+			// send mail with defined transport object
+			
+			transporter.sendMail(mailOptions, (error, info) => {
+			    if (error) {
+			        return reject(error);
+			    }
+			    console.log('Message %s sent: %s', info.messageId, info.response);
+
+			    return resolve(info);
+			});
+		});
+	}
+
+	function wyslijAllEmails(users) {
+		let promises = users.map(user => {
+			return wyslijEmail(user);
+		});
+		return Promise.all(promises);
+	}
+
+
+	User
+	.find()
+	.populate('tajemnica')
+	.then(wyslijAllEmails)
+	.then(results => {
+		console.log("results: ",results);
+		req.flash('error', ' e-maile z powiadomieniem wyslane!');
+		return res.redirect('/');
+	})
+	.catch(err => {
+		req.flash('error', err.message);
+		return res.redirect('/');
+		//return next(err);
+	});
+});
+
 
 
 
