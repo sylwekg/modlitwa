@@ -1,24 +1,30 @@
 
 
-<div class="card profile" style="max-width: 30rem;" >
-  
-  <img class="card-img-top img-circle" src="/images/avatar.jpg" alt="user" width="150">
-  <div class="card-block">
-    <h4 class="card-title text-center">{{data.name}}</h4>
-    <p class="card-text"><strong>Email: </strong>{{data.email}}</p>
-    <p class="card-text"><strong>Tel: </strong>{{data.tel}}</p>
-    <p class="card-text"><strong>Tajemnica: </strong>{{data.tajemnica.name}}</p>
-    <p class="card-text"><strong>Grupa: </strong>{{data.grupa.name}}</p>
-    <p class="card-text"><strong>Join date: </strong><i id="d1">{{data.joinDate}}</i></p>
-    <p class="card-text"><strong>Last update: </strong><i id="d2">{{data.updateDate}}</i></p>
-    <div class="justify">
-      <button type="button" class="btn btn-outline-primary ">Edit</button>
-      <a href="/users/delete/{{data._id}}">
-        <button type="button" class="btn btn-outline-danger ">Delete</button>
-      </a>
+
+  <div class="card profile content" style="max-width: 30rem;" >
+    
+    <img class="card-img-top img-circle" src="/images/avatar.jpg" alt="user" width="150">
+    <div class="card-block">
+      <h4 class="card-title text-center">{{data.name}}</h4>
+      <p class="card-text"><strong>Email: </strong><a href="mailto:{{data.email}}">{{data.email}}</a></p>
+      <p class="card-text"><strong>Tel: </strong> <a href="tel:{{data.tel}}">{{data.tel}}</a> </p>
+      <p class="card-text"><strong>Tajemnica: </strong>{{data.tajemnica.name}}</p>
+      <p class="card-text"><strong>Grupa: </strong>{{data.grupa.name}}</p>
+      <p class="card-text"><strong>Join date: </strong><i id="d1">{{data.joinDate}}</i></p>
+      <p class="card-text"><strong>Last update: </strong><i id="d2">{{data.updateDate}}</i></p>
+
+      <div class="justify">
+        <button type="button" class="btn btn-outline-primary" onclick="javascript:location.href='/users/edit/{{data._id}}'">Edit</button>
+        <button type="button" class="btn btn-outline-danger" onclick="javascript:location.href='/users/delete/{{data._id}}'">Delete</button>
+      </div>
+
     </div>
   </div>
-</div>
+
+
+
+
+
 
 
 <script type="text/javascript">

@@ -10,17 +10,5 @@ router.get('/', function(req, res, next) {
 });
 
 
-//groups listing
-router.get('/groups', function(req, res, next) {
-  Group
-  	.find()
-  	.populate('opiekun')
-  	.exec( function(err, docs) {
-    	return res.render('groups', { title: 'Grupy : ', data: docs });  
-  });
-
-});
-
-
 
 module.exports = router;

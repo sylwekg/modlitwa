@@ -1,0 +1,83 @@
+
+{{#if hasErrors}}
+    <div class="alert alert-danger content" id="errMsg">
+        {{#each messages}}
+            <p>{{this}}</p>
+        {{/each}}
+    </div>
+{{/if}}
+
+<div class="container-fluid">
+    
+    <div class="row featurette justify">
+		<div class="card profile content" style="max-width: 30rem; min-width: 18rem;" >
+		    <img class="card-img-top img-circle" src="/images/avatar.jpg" alt="user" width="150">
+		    <div class="card-block">
+			    <h4 class="card-title text-center">{{groupData.name}}</h4>
+			    <p class="card-text"><strong>Opiekun: </strong><a href="/users/profile/{{groupData.opiekun._id}}">{{groupData.opiekun.name}}</a></p>
+			    <p class="card-text"><strong>Last update: </strong><i id="d2">{{groupData.updateDate}}</i></p>
+			    <div class="justify">
+			    
+			    	<a href="/groups/edit/{{groupData._id}}">
+			        <button type="button" class="btn btn-outline-primary ">Edit</button>
+			        </a>
+
+			        <a href="/">
+			        <button type="button" class="btn btn-outline-danger ">Send e-mail</button>
+			        </a>
+
+			    </div>
+		    </div>
+		</div>
+	</div>
+
+	<div class="row featurette justify">
+
+	    {{# each usersData}}
+
+	   	<div class=" col-md-6 col-lg-3 col-xlg-3 item">
+	   		<a href="/users/profile/{{_id}}">
+	       		<div class="row">
+			        <div class="col-2 flex-center-vertically ">
+			        	<img class=" img-circle" src="/images/avatar.jpg" alt="user" width="50">
+			    	</div>
+			    	<div class="col-10  ">
+			            <h5><strong>  {{name}}</strong> </h5>
+			            <h6><i class="fa fa-envelope" aria-hidden="true"></i>  {{email}} </h6>
+			            <h6><i class="fa fa-life-ring" aria-hidden="true"></i>  {{tajemnica.name}}</h6>
+			  	    </div>
+		  		</div>
+		  	</a>
+	    </div>
+
+		{{/each}}
+
+
+    </div>
+</div>
+
+<div class=" fixed-bottom justify">
+	<a href="/groups/addUsers/{{groupData._id}}">
+		<div class="plus-button justify">
+			<h1><i class="fa fa-plus-circle" aria-hidden="true"></i></h1>
+		</div>
+	</a>
+	<a href="/groups/removeUsers/{{groupData._id}}">
+		<div class="minus-button justify">
+			<h1><i class="fa fa-minus-circle" aria-hidden="true"></i></h1>
+		</div>
+	</a>
+</div>
+
+<script type="text/javascript">
+    $( document ).ready(function() {
+    //zwijanie powiadomienia		
+	$('#errMsg').delay(5000).slideUp();
+	
+
+    //korekcja wyswietlania daty
+    var d2 = new Date(document.getElementById('d2').innerHTML);
+    document.getElementById('d2').innerHTML=d2.toDateString();
+  	});
+</script>
+

@@ -1,29 +1,47 @@
+{{#if hasErrors}}
+    <div class="alert alert-danger content" id="errMsg">
+        {{#each messages}}
+            <p>{{this}}</p>
+        {{/each}}
+    </div>
+{{/if}}
 
-<div class="container-fluid">
+<div class="container-fluid content">
     <div class="row featurette justify">
 
         {{# each data}}
 
        	<div class=" col-md-6 col-lg-3 col-xlg-3 item">
-       		<div class="row">
-		        <div class="col-2 flex-center-vertically ">
-		        	<img class=" img-circle" src="/images/avatar.jpg" alt="user" width="50">
-		    	</div>
-		    	<div class="col-10  ">
-		            <h5><strong>  {{name}}</strong> </h5>
+       		<a href="/groups/profile/{{_id}}">
+	       		<div class="row">
+			        <div class="col-2 flex-center-vertically ">
+			        	<img class=" img-circle" src="/images/avatar.jpg" alt="user" width="50">
+			    	</div>
+			    	<div class="col-10  ">
+			            <h5><strong>  {{name}}</strong> </h5>
 
-		            <h6><i class="fa fa-user-o" aria-hidden="true"></i>  {{opiekun.name}} </h6>
+			            <h6><i class="fa fa-user-o" aria-hidden="true"></i>  {{opiekun.name}} </h6>
 
 
-		  	    </div>
-	  		</div>
+			  	    </div>
+		  		</div>
+		  	</a>
 	    </div>
-
-
-
-
     	{{/each}}
 
 
     </div>
 </div>
+
+<a href="/groups/add">
+	<div class="fixed-bottom plus-button justify">
+		<h1><i class="fa fa-plus-circle" aria-hidden="true"></i></h1>
+	</div>
+</a>
+
+<script type="text/javascript">
+    $( document ).ready(function() {
+    //zwijanie powiadomienia		
+	$('#errMsg').delay(5000).slideUp();
+  	});
+</script>

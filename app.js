@@ -13,9 +13,9 @@ var MongoStore = require('connect-mongo')(session);
 
 var index = require('./routes/index');
 var users = require('./routes/users');
+var groups = require('./routes/groups');
 
 var app = express();
-
 
 
 
@@ -41,10 +41,39 @@ app.use(session({
 app.use(flash());
 
 // view engine setup
-app.engine('.hbs',expressHbs({defaultLayout:'layout', extname:'.hbs'}));
+app.engine('.hbs',expressHbs({
+  defaultLayout:'layout', 
+  extname:'.hbs',
+  helpers: {
+    if_eq: function (a, b, opts) { 
+        if(a === b) // Or === depending on your needs
+          return opts.fn(this);
+        else
+          return opts.inverse(this); 
+      },
+    json: function(context) {
+      return JSON.stringify(context); 
+    } 
+  }
+}));
+
+
+
 
 //app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', '.hbs');
+
+
+
+handlebars.registerHelper('if_eq', function(a, b, opts) {
+    if(a === b) // Or === depending on your needs
+        return opts.fn(this);
+    else
+        return opts.inverse(this);
+});
+
+
+
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -56,6 +85,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
 app.use('/users', users);
+app.use('/groups', groups);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -1,0 +1,75 @@
+
+<div class="container-fluid"> 
+	 <form action="/groups/edit/{{groupData._id}}" method="POST">   
+	    <div class="row featurette justify">
+			<div class="card profile content" style="max-width: 30rem; min-width: 18rem;" >
+			    <img class="card-img-top img-circle" src="/images/avatar.jpg" alt="user" width="150">
+			    <div class="card-block">
+
+				  	<div class="form-group row">
+					  	<label for="name" class="col-2 col-form-label"><strong>Nazwa: </strong></label>
+					  	<div class="col-10">
+					    	<input class="form-control" type="name" value="{{groupData.name}}" id="name" name="groupName" required>
+					  	</div>
+				  	</div>
+
+					<div class="form-group row">
+						<label for="tajemnica" class="col-2 col-form-label"><strong>Opiekun: </strong></label>
+					    <div class="col-10">
+						  	<select class="form-control" id="opiekun" name="opiekun">
+
+							  	{{# each usersData}}
+									<option value={{_id}}>{{name}}</option>
+							    {{/each}}
+
+						   	</select>
+						</div>
+					</div> 
+
+				    <p class="card-text"><strong>Last update: </strong><i id="d2">{{groupData.updateDate}}</i></p>
+
+				    <div class="justify">
+				        <button type="submit" class="btn btn-outline-success ">Save</button>
+				        
+				        <button type="button" onclick="goBack()" class="btn btn-outline-warning ">Cancel</button>
+				        
+				        <a href="/groups/delete/{{groupData._id}}">
+			        		<button type="button" class="btn btn-outline-danger ">Delete</button>
+			        	</a>
+
+				    </div>
+
+			    </div>
+			</div>
+		</div>
+	</form>
+</div>
+
+
+{{!-- //korekcja wyswietlania daty --}}
+<script type="text/javascript">
+    $( document ).ready(function() {
+
+    //korekcja wyswietlania daty 
+    var d2 = new Date(document.getElementById('d2').innerHTML);
+    document.getElementById('d2').innerHTML=d2.toDateString();
+
+
+    //ustawienie selecta na właściwej pozycji
+    var options =document.getElementById('opiekun').children;
+    var currentUser = JSON.parse('{{{json groupData.opiekun._id}}}');
+    for(i=0;i<options.length;i++) {
+    	if (options[i].value===currentUser) {
+    		options[i].selected=true;
+    		console.log(currentUser);
+    	}
+    }
+
+  });
+
+    function goBack() {
+    window.history.back();
+	}
+
+
+</script>

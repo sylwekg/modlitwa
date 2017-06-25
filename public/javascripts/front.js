@@ -17,5 +17,9 @@ function toggleFullScreen() {
 }
 
 
+//obsługa wstecz
+function goBack() {
+  window.history.back();
+}
 
 

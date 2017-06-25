@@ -21,7 +21,7 @@ router.get('/', function(req, res, next) {
   });
 });
 
-/*  user profile /users/:id */
+/*  user profile /users/profile/:id */
 router.get('/profile/:id', function(req, res, next) {
   User
   	.findById(req.params.id) 
@@ -46,34 +46,37 @@ router.post('/add', function(req, res, next) {
 	  		if(err)
 	  			return next(err);
 	  		else {
-	  			Group
-			  	.findById(req.body.grupa)
-			  	.exec( function(err, grupa) {
-			  		if(err)
-			  			return next(err);
-			  		else {
-			  			console.log(tajemnica,grupa);
-			  			var newUser = new User({
-						  	email: req.body.email,
-						  	name: req.body.name,
-						    tel: req.body.tel,
-						    tajemnica: tajemnica._id,
-						    grupa: grupa._id,
-						    joinDate: new Date().getTime()
-					  		});
-			  			newUser.save(function (err, newUser) {
-			  				if(err) {
-				                if(err.message.startsWith("E11000"))
-				                    req.flash('error', 'Podany e-mail juz istnieje. ');
-				                else
-				                    req.flash('error', 'Błąd bazy danych. Spróbuj ponownie ');
-				                return res.redirect('/users/add');
-			  				}
-			  				res.status(201);
-							return res.redirect('/users/profile/'+newUser._id);
-			  			});
-			  		} 
-			  	});
+	  			if(req.body.grupa==='0'){
+	  			var newUser = new User({
+				  	email: req.body.email,
+				  	name: req.body.name,
+				    tel: req.body.tel,
+				    tajemnica: tajemnica._id,
+				    grupa: null,
+				    joinDate: new Date().getTime()
+			  		});
+	  			} else {
+	  			var newUser = new User({
+				  	email: req.body.email,
+				  	name: req.body.name,
+				    tel: req.body.tel,
+				    tajemnica: tajemnica._id,
+				    grupa: grupa._id,
+				    joinDate: new Date().getTime()
+			  		});
+	  			}
+
+	  			newUser.save(function (err, newUser) {
+	  				if(err) {
+		                if(err.message.startsWith("E11000"))
+		                    req.flash('error', 'Podany e-mail juz istnieje. ');
+		                else
+		                    req.flash('error', 'Błąd bazy danych. Spróbuj ponownie ');
+		                return res.redirect('/users/add');
+	  				}
+	  				res.status(201);
+					return res.redirect('/users/profile/'+newUser._id);
+	  			});
 	  		}	
 	 	});
 	}
@@ -90,26 +93,29 @@ router.get('/add', function(req, res, next) {
 
 	Tajemnica
   	.find()
+  	.sort({number:'asc'})
   	.exec( function(err, tajemnice) {
   		if(err)
   			return next(err);
   		else {
   			Group
-			  	.find()
-			  	.exec( function(err, grupy) {
-			  		if(err)
-			  			return next(err);
-			  		else {
-			  			return res.render('editProfile', { 'tajemnice': tajemnice, 'grupy': grupy, 
-			  				messages:messages, hasErrors: messages.length>0 });  
-			  		}
-			  	});
+		  	.find()
+		  	.sort({name:'asc'})
+		  	.exec( function(err, grupy) {
+		  		if(err)
+		  			return next(err);
+		  		else {
+		  			//grupy.unshift("bez grupy");
+		  			return res.render('addProfile', { 'tajemnice': tajemnice, 'grupy': grupy, 
+		  				messages:messages, hasErrors: messages.length>0 });  
+		  		}
+		  	});
   		}	
  	});
 });
 
 
-/* delete /user/delete/:id  */
+/* delete /users/delete/:id  */
 router.get('/delete/:id', function(req, res, next) {
 	User
   	.findById(req.params.id) 
@@ -125,13 +131,66 @@ router.get('/delete/:id', function(req, res, next) {
 });
 
 
-/* Edit user  */
-router.get('/edit', function(req, res, next) {
-	
+/* Edit user   /users/edit/:id     */
+router.get('/edit/:id', function(req, res, next) {
+	User
+  	.findById(req.params.id) 
+  	.populate('tajemnica')
+  	.populate('grupa')
+  	.exec( function(err, docs) {
+  		if(err)
+  			return next(err);
+  		else {
+			Tajemnica
+		  	.find()
+		  	.sort({number:'asc'})
+		  	.exec( function(err, tajemnice) {
+		  		if(err)
+		  			return next(err);
+		  		else {
+		  			Group
+				  	.find()
+				  	.sort({name:'asc'})
+				  	.exec( function(err, grupy) {
+				  		if(err)
+				  			return next(err);
+				  		else {
+				  			//grupy.unshift("bez grupy");
+				  			return res.render('editProfile', { data: docs, 'tajemnice': tajemnice, 'grupy': grupy});  
+				  		}
+				  	});
+		  		}	
+		 	});
+  		}
+    });
 });
 
-router.post('/edit', function(req, res, next) {
-
+router.post('/edit/:id', function(req, res, next) {
+	console.log(req.body);
+	User
+  	.findById(req.params.id) 
+  	.exec( function(err, user) {
+  		if(err)
+  			return next(err);
+  		else {
+  			user.name=req.body.name;
+  			user.email=req.body.email;
+			user.tel=req.body.tel;
+			user.tajemnica=req.body.tajemnica;
+			user.updateDate= new Date().getTime();
+			if(req.body.grupa==="0") {
+				user.grupa=null;
+			} else {
+				user.grupa=req.body.grupa;	
+			}
+  			user.save( function(err, updatedUser) {
+  				if(err) 
+  					return next(err);
+  				else
+  					return res.redirect('/users/profile/'+req.params.id);
+    		});
+  		}
+  	});
 });
 
 /* request o zmiane tejemnic /users/zmianaTajemnic  */
