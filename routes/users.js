@@ -388,45 +388,7 @@ res.render('index', { title: 'Seeding group completed', data: docs });
 });
 
 
-router.get('/tajemnica/seeder', function(req, res, next) {
-  var tajemnice = [
-  	new Tajemnica({
- 		number : "1",
- 		name : "Tajemica Radosna  I - Zwiastowanie",
-	}),
-  	new Tajemnica({
- 		number : "2",
- 		name : "Tajemica Radosna  II - Nawiedzenie św. Elżbiety",
-	}),
-  	new Tajemnica({
-		number : "3",
-		name : "Tajemica Radosna  III - Narodzenie Jezusa",
-	}),
-	new Tajemnica({
-		number : "4",
-		name : "Tajemica Radosna  IV - Ofiarowanie Jezusa w świątyni",
-	}),
-  	new Tajemnica({
- 		number : "5",
- 		name : "Tajemica Radosna  V - Znalezienie Jezusa w świątyni",
-	}),	
-	];
 
-
-var done =0;
-	for( var i=0; i<tajemnice.length;i++) {
-	    tajemnice[i].save(function (err, res) {
-	        done++;
-	        if(done===tajemnice.length) //exit();
-		        Tajemnica.find( function(err, docs) {
-					if(err) next(err);
-				});
-	    });
-	}
-
-res.render('index', { title: 'Seeding tajemnic completed', data: docs });
-
-});
 
 
   				
