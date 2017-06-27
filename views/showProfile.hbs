@@ -1,9 +1,17 @@
 
+{{#if hasErrors}}
+    <div class="alert alert-danger content" id="errMsg">
+        {{#each messages}}
+            <p>{{this}}</p>
+        {{/each}}
+    </div>
+{{/if}}
+
 
 
   <div class="card profile content" style="max-width: 30rem;" >
     
-    <img class="card-img-top img-circle" src="/images/avatar.jpg" alt="user" width="150">
+    <img class="card-img-top img-circle" src="/images/{{data.foto}}" alt="user" width="150">
     <div class="card-block">
       <h4 class="card-title text-center">{{data.name}}</h4>
       <p class="card-text"><strong>Email: </strong><a href="mailto:{{data.email}}">{{data.email}}</a></p>
@@ -29,10 +37,12 @@
 
 <script type="text/javascript">
   $( document ).ready(function() {
+
+    $('#errMsg').delay(5000).slideUp();
+
     var d1 = new Date(document.getElementById('d1').innerHTML);
     document.getElementById('d1').innerHTML=d1.toDateString();
-  });
-    $( document ).ready(function() {
+
     var d2 = new Date(document.getElementById('d2').innerHTML);
     document.getElementById('d2').innerHTML=d2.toDateString();
   });

@@ -3,6 +3,21 @@ var router = express.Router();
 var User = require('../models/user');
 var Tajemnica = require('../models/tajemnica');
 var Group = require('../models/group');
+var path = require('path');
+var multer  = require('multer');
+
+var storage = multer.diskStorage({
+	destination: function(req, file, callback) {
+		callback(null, 'public/images/')
+	},
+	filename: function(req, file, callback) {
+		console.log(file)
+		callback(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
+	}
+});
+
+var upload = multer({ storage: storage });
+	
 
 const nodemailer = require('nodemailer');
 
@@ -23,6 +38,8 @@ router.get('/', function(req, res, next) {
 
 /*  user profile /users/profile/:id */
 router.get('/profile/:id', function(req, res, next) {
+	var messages = req.flash('error');
+
   User
   	.findById(req.params.id) 
   	.populate('tajemnica')
@@ -31,13 +48,13 @@ router.get('/profile/:id', function(req, res, next) {
   		if(err)
   			return next(err);
   		else
-    		return res.render('showProfile', { data: docs });  
+    		return res.render('showProfile', { data: docs , messages:messages, hasErrors: messages.length>0});  
   });
 });
 
 
 /* Add user    /users/add    */
-router.post('/add', function(req, res, next) {
+router.post('/add',upload.single('foto'), function(req, res, next) {
   	console.log(req.body);
   	if(req.body.email && req.body.name) {	
 	  	Tajemnica
@@ -46,25 +63,32 @@ router.post('/add', function(req, res, next) {
 	  		if(err)
 	  			return next(err);
 	  		else {
-	  			if(req.body.grupa==='0'){
+  				var foto, grupa;
+				if(req.file) {
+					var ext = path.extname(req.file.originalname)
+					if (ext !== '.png' && ext !== '.jpg' && ext !== '.gif' && ext !== '.jpeg'&& ext !== '.JPEG' && ext !== '.JPG' && ext !== '.GIF' && ext !== '.PNG' ) {
+						req.flash('error', 'Zły format zdjecia, zdjecie nie zostało zmienione.');
+					} else {
+						foto=req.file.filename;
+					}
+				}
+				else
+					foto="avatar.jpg";
+
+	  			if(req.body.grupa==='0')
+					grupa= null;
+				else
+					grupa= req.body.grupa;
+
 	  			var newUser = new User({
 				  	email: req.body.email,
 				  	name: req.body.name,
 				    tel: req.body.tel,
 				    tajemnica: tajemnica._id,
-				    grupa: null,
+				    grupa: grupa,
+				    foto: foto,
 				    joinDate: new Date().getTime()
 			  		});
-	  			} else {
-	  			var newUser = new User({
-				  	email: req.body.email,
-				  	name: req.body.name,
-				    tel: req.body.tel,
-				    tajemnica: tajemnica._id,
-				    grupa: grupa._id,
-				    joinDate: new Date().getTime()
-			  		});
-	  			}
 
 	  			newUser.save(function (err, newUser) {
 	  				if(err) {
@@ -120,7 +144,7 @@ router.get('/delete/:id', function(req, res, next) {
 	User
   	.findById(req.params.id) 
   	.remove()
-  	.exec( function(err) {
+  	.exec( function(err, usr) {
   		if(err)
   			return next(err);
   		else {
@@ -165,8 +189,10 @@ router.get('/edit/:id', function(req, res, next) {
     });
 });
 
-router.post('/edit/:id', function(req, res, next) {
+router.post('/edit/:id', upload.single('foto'), function(req, res, next) {
 	console.log(req.body);
+	console.log(req.file);
+
 	User
   	.findById(req.params.id) 
   	.exec( function(err, user) {
@@ -178,11 +204,23 @@ router.post('/edit/:id', function(req, res, next) {
 			user.tel=req.body.tel;
 			user.tajemnica=req.body.tajemnica;
 			user.updateDate= new Date().getTime();
-			if(req.body.grupa==="0") {
+
+			if(req.body.grupa==="0")
 				user.grupa=null;
-			} else {
+			else
 				user.grupa=req.body.grupa;	
+
+			if(req.file) {
+				var ext = path.extname(req.file.originalname)
+				if (ext !== '.png' && ext !== '.jpg' && ext !== '.gif' && ext !== '.jpeg'&& ext !== '.JPEG' && ext !== '.JPG' && ext !== '.GIF' && ext !== '.PNG' ) {
+					req.flash('error', 'Zły format zdjecia, zdjecie nie zostało zmienione.');
+				} else {
+					user.foto=req.file.filename;
+				}
 			}
+			else
+				user.foto="avatar.jpg";
+
   			user.save( function(err, updatedUser) {
   				if(err) 
   					return next(err);

@@ -96,3 +96,18 @@ a:active {
   border-color: transparent;
 }
 
+
+.inputfile {
+width: 0.1px;
+height: 0.1px;
+opacity: 0;
+overflow: hidden;
+position: absolute;
+z-index: -1;
+}
+
+#errMsg {
+  /*position: absolute;*/
+  margin-top: 60px;
+/*  z-index: 10;*/
+}

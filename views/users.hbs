@@ -8,7 +8,7 @@
        		<a href="/users/profile/{{_id}}">
 	       		<div class="row">
 			        <div class="col-2 flex-center-vertically ">
-			        	<img class=" img-circle" src="/images/avatar.jpg" alt="user" width="50">
+			        	<img class=" img-circle" src="/images/{{foto}}" alt="user" width="50">
 			    	</div>
 			    	<div class="col-10  ">
 			            <h5><strong>  {{name}}</strong> </h5>
@@ -26,8 +26,10 @@
     </div>
 </div>
 
-<a href="/users/add">
-	<div class="fixed-bottom plus-button justify">
+
+<div class=" fixed-bottom plus-button justify">
+	<a href="/users/add">
 		<h1><i class="fa fa-plus-circle" aria-hidden="true"></i></h1>
-	</div>
-</a>
+	</a>		
+</div>
+
