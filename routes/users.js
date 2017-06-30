@@ -5,6 +5,7 @@ var Tajemnica = require('../models/tajemnica');
 var Group = require('../models/group');
 var path = require('path');
 var multer  = require('multer');
+var fs = require('fs');
 
 var storage = multer.diskStorage({
 	destination: function(req, file, callback) {
@@ -48,7 +49,7 @@ router.get('/profile/:id', function(req, res, next) {
   		if(err)
   			return next(err);
   		else
-    		return res.render('showProfile', { data: docs , messages:messages, hasErrors: messages.length>0});  
+    		return res.render('showProfile', { backButton:true, backLink:"/users" ,data: docs , messages:messages, hasErrors: messages.length>0});  
   });
 });
 
@@ -130,7 +131,7 @@ router.get('/add', function(req, res, next) {
 		  			return next(err);
 		  		else {
 		  			//grupy.unshift("bez grupy");
-		  			return res.render('addProfile', { 'tajemnice': tajemnice, 'grupy': grupy, 
+		  			return res.render('addProfile', { backButton:true, backLink:"/users" ,'tajemnice': tajemnice, 'grupy': grupy, 
 		  				messages:messages, hasErrors: messages.length>0 });  
 		  		}
 		  	});
@@ -143,15 +144,29 @@ router.get('/add', function(req, res, next) {
 router.get('/delete/:id', function(req, res, next) {
 	User
   	.findById(req.params.id) 
-  	.remove()
   	.exec( function(err, usr) {
   		if(err)
   			return next(err);
   		else {
-  			req.flash('error', ' Uzytkownik skasowany !');
-    		return res.redirect('/');
+  			var foto=usr.foto;
+  			if (foto !== "avatar.jpg") {
+  			 	fs.unlink('public/images/'+foto, (err) => {
+  					if (err) return next(err);
+  					console.log('zdjecie skasowane');
+  				});
+  			}
+			usr.remove(function(err, usr) {
+				if(err){
+					req.flash('error', ' Błąd w trakcie kasowaia profilu !');
+					return next(err);
+				}
+				else {
+					req.flash('error', ' Profil skasowany !');
+					return res.redirect('/');	
+				}
+			});
   		}
-  });
+  	});
 });
 
 
@@ -180,7 +195,7 @@ router.get('/edit/:id', function(req, res, next) {
 				  			return next(err);
 				  		else {
 				  			//grupy.unshift("bez grupy");
-				  			return res.render('editProfile', { data: docs, 'tajemnice': tajemnice, 'grupy': grupy});  
+				  			return res.render('editProfile', { backButton:true, backLink:"/users/profile/"+req.params.id , data: docs, 'tajemnice': tajemnice, 'grupy': grupy});  
 				  		}
 				  	});
 		  		}	
@@ -218,8 +233,8 @@ router.post('/edit/:id', upload.single('foto'), function(req, res, next) {
 					user.foto=req.file.filename;
 				}
 			}
-			else
-				user.foto="avatar.jpg";
+			// else
+			// 	user.foto="avatar.jpg";
 
   			user.save( function(err, updatedUser) {
   				if(err) 

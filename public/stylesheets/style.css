@@ -106,6 +106,30 @@ position: absolute;
 z-index: -1;
 }
 
+
+.back-button {
+    margin-right: 10px;
+ }   
+    .back-button:link {
+        color: red;
+    }
+
+    /* visited link */
+    .back-button:visited {
+        color: green;
+    }
+
+    /* mouse over link */
+    .back-button:hover {
+        color: hotpink;
+    }
+
+    /* selected link */
+    .back-button:active {
+        color: blue;
+    }
+
+
 #errMsg {
   /*position: absolute;*/
   margin-top: 60px;

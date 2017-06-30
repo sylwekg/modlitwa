@@ -11,8 +11,13 @@
     
     <div class="row featurette justify">
 		<div class="card profile content" style="max-width: 30rem; min-width: 18rem;" >
-		    <img class="card-img-top img-circle" src="/images/avatar.jpg" alt="user" width="150">
+
+		    <img class="card-img-top img-circle" src="/images/{{groupData.foto}}" alt="user" width="150">
+
 		    <div class="card-block">
+
+
+
 			    <h4 class="card-title text-center">{{groupData.name}}</h4>
 			    <p class="card-text"><strong>Opiekun: </strong><a href="/users/profile/{{groupData.opiekun._id}}">{{groupData.opiekun.name}}</a></p>
 			    <p class="card-text"><strong>Last update: </strong><i id="d2">{{groupData.updateDate}}</i></p>
@@ -39,7 +44,7 @@
 	   		<a href="/users/profile/{{_id}}">
 	       		<div class="row">
 			        <div class="col-2 flex-center-vertically ">
-			        	<img class=" img-circle" src="/images/avatar.jpg" alt="user" width="50">
+			        	<img class=" img-circle" src="/images/{{foto}}" alt="user" width="50">
 			    	</div>
 			    	<div class="col-10  ">
 			            <h5><strong>  {{name}}</strong> </h5>
@@ -74,7 +79,6 @@
     //zwijanie powiadomienia		
 	$('#errMsg').delay(5000).slideUp();
 	
-
     //korekcja wyswietlania daty
     var d2 = new Date(document.getElementById('d2').innerHTML);
     document.getElementById('d2').innerHTML=d2.toDateString();

@@ -3,6 +3,23 @@ var router = express.Router();
 var Group = require('../models/group');
 var User = require('../models/user');
 var mongoose = require('mongoose');
+var path = require('path');
+var multer  = require('multer');
+var fs = require('fs');
+
+var storage = multer.diskStorage({
+	destination: function(req, file, callback) {
+		callback(null, 'public/images/')
+	},
+	filename: function(req, file, callback) {
+		console.log(file)
+		callback(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
+	}
+});
+
+var upload = multer({ storage: storage });
+
+
 
 // GET     /groups listing
 router.get('/', function(req, res, next) {
@@ -59,11 +76,26 @@ router.get('/add', function(req, res, next) {
 });
 
 
-router.post('/add', function(req, res, next) { 
+router.post('/add',upload.single('foto'), function(req, res, next) { 
+	console.log(req.body);
+	console.log(req.file);
+
+	var foto;
+	if(req.file) {
+		var ext = path.extname(req.file.originalname)
+		if (ext !== '.png' && ext !== '.jpg' && ext !== '.gif' && ext !== '.jpeg'&& ext !== '.JPEG' && ext !== '.JPG' && ext !== '.GIF' && ext !== '.PNG' ) {
+			req.flash('error', 'Zły format zdjecia, zdjecie nie zostało zmienione.');
+		} else {
+			foto=req.file.filename;
+		}
+	}
+	else
+		foto="avatar.jpg";
 
 	var newGroup = new Group({
 	  	name: req.body.groupName,
 	  	opiekun: req.body.opiekun,
+	  	foto: foto,
 	    joinDate: new Date().getTime()
 		});
 
@@ -71,7 +103,7 @@ router.post('/add', function(req, res, next) {
 		if(err) 
 			return next(err);
 		else {
-
+			req.flash('error', 'Dodano nową grupę !');
 			return res.redirect('/groups');
 		}
 	});
@@ -103,7 +135,10 @@ router.get('/edit/:id', function(req, res, next) {
 });
 
 //  /groups/edit/:id
-router.post('/edit/:id', function(req, res, next) {
+router.post('/edit/:id', upload.single('foto'), function(req, res, next) {
+	console.log(req.body);
+	console.log(req.file);
+
 	Group
   	.findById(req.params.id) 
   	.exec( function(err, group) {
@@ -112,6 +147,19 @@ router.post('/edit/:id', function(req, res, next) {
   		else {
   			group.opiekun=req.body.opiekun;
   			group.name=req.body.groupName;
+  			group.updateDate= new Date().getTime();
+
+  			if(req.file) {
+				var ext = path.extname(req.file.originalname)
+				if (ext !== '.png' && ext !== '.jpg' && ext !== '.gif' && ext !== '.jpeg'&& ext !== '.JPEG' && ext !== '.JPG' && ext !== '.GIF' && ext !== '.PNG' ) {
+					req.flash('error', 'Zły format zdjecia, zdjecie nie zostało zmienione.');
+				} else {
+					group.foto=req.file.filename;
+				}
+			}
+			// else
+			// 	group.foto="avatar.jpg";
+
   			group.save( function(err, updatedGroup) {
   				if(err) 
   					return err;
@@ -138,24 +186,33 @@ router.get('/delete/:id', function(req, res, next) {
 			} else{
 				Group
 			  	.findById(req.params.id) 
-			  	.remove()
-			  	.exec( function(err) {
+			  	.exec( function(err, group) {
 			  		if(err)
 			  			return next(err);
 			  		else {
-			  			req.flash('error', ' Grupa skasowana !');
-			    		return res.redirect('/groups');
+
+			  			var foto=group.foto;
+			  			if (foto !== "avatar.jpg") {
+			  			 	fs.unlink('public/images/'+foto, (err) => {
+			  					if (err) return next(err);
+			  					console.log('zdjecie skasowane');
+			  				});
+			  			}
+						group.remove(function(err, group) {
+							if(err){
+								req.flash('error', ' Błąd w trakcie kasowaia grupy !');
+								return next(err);
+							}
+							else {
+								req.flash('error', ' Grupa skasowana !');
+								return res.redirect('/groups');	
+							}
+						});
 			  		}
 			  	});
 			}
 		}
 	});
-
-
-
-
-
-
 });
 
 // add users to group to group(id)   /groups/addUsers/:id  
@@ -185,9 +242,7 @@ router.post('/addUsers/:id', function(req, res, next) {
 		if(Array.isArray(req.body.addUsers))
 			resolve(req.body.addUsers.map(makeMObject) ) ;
 		else 
-			resolve(mongoose.Types.ObjectId(req.body.addUsers) ) ;
-
-		
+			resolve(mongoose.Types.ObjectId(req.body.addUsers) ) ;	
 	});
 
 	p1.then(function(val) {
@@ -201,7 +256,12 @@ router.post('/addUsers/:id', function(req, res, next) {
 	  				user.save();
 	  			});
 	  			console.log(users);
-	  			req.flash('error', ' Dodano '+ users.length+' użytkowników!');	
+
+	  			if(users.length==0)
+	  				req.flash('error', 'Nie dodano użytkowników!');	
+	  			else
+	  				req.flash('error', ' Dodano '+ users.length+' użytkowników!');	
+
 				return res.redirect('/groups/profile/'+req.params.id);
 	  		}
 		});

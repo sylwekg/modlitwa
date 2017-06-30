@@ -8,8 +8,9 @@ var groupSchema = new mongoose.Schema({
         unique: true,
         required : true        
     },
-
-    // todo: wielu opiekunow (relacja 1..n)
+    foto: {
+        type: String
+    },  
 
     opiekun:{ type: Schema.Types.ObjectId, ref: 'User' },   
 

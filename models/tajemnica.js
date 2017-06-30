@@ -12,6 +12,9 @@ var tajemnicaSchema = new mongoose.Schema({
         required : true,
         unique: true,       
     },
+    foto: {
+        type: String
+    },  
     updateDate: {
         type: Date,
         default: Date.now,
