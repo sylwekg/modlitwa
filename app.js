@@ -11,14 +11,14 @@ var flash = require('connect-flash');
 var session = require('express-session');
 var MongoStore = require('connect-mongo')(session);
 
-var index = require('./routes/index');
-var users = require('./routes/users');
-var groups = require('./routes/groups');
-
 var app = express();
+var socket_io    = require( "socket.io" );
+var io           = socket_io();
+app.io           = io;
 
-
-
+var index = require('./routes/index');
+var users = require('./routes/users')(io);
+var groups = require('./routes/groups');
 //DB start
 mongoose.connect('localhost:27017/modlitwapomaga');
 var db = mongoose.connection;
@@ -72,7 +72,7 @@ app.engine('.hbs',expressHbs({
       if (day < 10) day = "0" + day;
       if (hour <10) hour = "0" +hour;
       if (minute <10) minute = "0" +minute;
-      
+
       var today = year + "-" + month + "-" + day + "T" + hour + ":" + minute + ":" + second;
     
       return today; 
@@ -98,6 +98,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', index);
 app.use('/users', users);
 app.use('/groups', groups);
+
+//socket.io connection
+io.sockets.on('connection', (socket) => {
+    console.log('Socket.IO Connected');
+    socket.on('disconnect', () => {
+        console.log('Socket.IO Disconnected');
+    });
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
