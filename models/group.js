@@ -22,5 +22,6 @@ var groupSchema = new mongoose.Schema({
 });
 
 
+
 var Group = mongoose.model('Group', groupSchema);
 module.exports = Group;

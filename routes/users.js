@@ -1,11 +1,18 @@
 var express = require('express');
 var router = express.Router();
-var User = require('../models/user');
-var Tajemnica = require('../models/tajemnica');
-var Group = require('../models/group');
 var path = require('path');
 var multer  = require('multer');
 var fs = require('fs');
+var schedule = require('node-schedule');
+
+
+var User = require('../models/user');
+var Tajemnica = require('../models/tajemnica');
+var Group = require('../models/group');
+var Global = require('../models/global');
+
+
+//var jobs = [];
 
 var storage = multer.diskStorage({
 	destination: function(req, file, callback) {
@@ -33,7 +40,7 @@ router.get('/', function(req, res, next) {
   		if(err)
   			return next(err);
   		else  		
-    		return res.render('users', { data: docs, messages:messages, hasErrors: messages.length>0 });  
+    		return res.render('users', { backButton:true, backLink:"/", data: docs, messages:messages, hasErrors: messages.length>0 });  
   });
 });
 
@@ -246,95 +253,214 @@ router.post('/edit/:id', upload.single('foto'), function(req, res, next) {
   	});
 });
 
+
 /* request o zmiane tejemnic /users/zmianaTajemnic  */
-//kompletnie nie dzialajacy w obecnej formie trzeba to zrobic z uzyciem promisow
 router.get('/zmianaTajemnic', function(req, res, next) {
-
-	function nastepnaTajemnica(tajemnica) {
-		//console.log("nastepnaTajemnica");
-		var nowaTajemnica;
-		if (tajemnica.number<20)
-			nowaTajemnica=tajemnica.number+1;
-		else
-			nowaTajemnica=1;
-
-		return Tajemnica.findOne({'number' : nowaTajemnica}).exec();  
-	}
+	var messages = req.flash('error');
+	console.log(schedule.scheduledJobs);
 	
-	function updateRecord(user) {
-		console.log("od aktualizacji minelo :",(Date.now() - user.updateDate)/(1000*60*60)," godzin");
-		if( (Date.now() - user.updateDate) <  1000*60*60  ) { //mniej niz 1 godzina
-			var err = new Error(`User ${user.email} byl juz aktualizowany.`);
-			throw err;
-		} else {
-			return Tajemnica.findById(user.tajemnica)
-			.then(nastepnaTajemnica)
-			.then(nextTaj => {
-				user.tajemnica = nextTaj._id;
-				user.updateDate = Date.now();
-				return user;
+	Global
+  	.findOne({name:'default'})
+  	.exec( function(err, doc) {
+  		if(err) {
+  			console.log('brak ustawien standardowych');
+  			return next(err);
+  		}
+  		else {
+  			console.log(doc);
+  			if(doc) {
+  				if(Object.keys(schedule.scheduledJobs).length === 0 ) {
+  					// konwersja czasu z lokalnego do UTC przed zapisaniem do bazy
+		  			var date = new Date(doc.dataZmiany);
+		  			var loc_d = date.getTimezoneOffset()*60000;
+		  			console.log('ladowanie eventu z bazy');
+					schedule.scheduleJob(Date.parse(date)+loc_d, function(){
+					  	console.log('Wykonanie funkcji zmiany tajemnic');
+					  	//.............
+					});
+  				}
+  			}
+  			return res.render('zmianaTajemnic', { backButton:true, backLink:"/", data: doc, messages:messages, hasErrors: messages.length>0 });
+  		} 			  
+	}); 
+});
+
+//aktualizacja daty zaplanowanej dla zmiany tajemnic
+router.post('/zmianaTajemnic/update', function(req, res, next) {
+	console.log("formularz przysłał",req.body);
+
+	Global
+  	.findOne({name:'default'})
+  	.exec( function(err, docs) {
+  		if(err)
+  			return next(err);
+  		else {
+  			
+  			if(docs) 
+  				docs.remove();
+  			// konwersja czasu z lokalnego do UTC przed zapisaniem do bazy
+  			var d = new Date(req.body.date);
+  			var loc_d = d.getTimezoneOffset()*60000;
+
+  			var newSetting = new Global({
+  				name : "default",
+  				powiadomienieEmail: (req.body.powiadomienieEmail=="on") ? true : false,
+    			powtarzaj: req.body.powtarzaj,
+    			dataZmiany: new Date(Date.parse(req.body.date)+loc_d),
+    			updateDate: new Date().getTime(),
+  			});
+
+  			newSetting.save(function (err, item) {
+  				if(err) 
+					return next(err);
+				else{
+					console.log('do bazy zapisano: ',item);
+					req.flash('error', ' Zapisano zmiany!');
+					return res.redirect('/users/zmianaTajemnic');
+				}
 			});
-		}
+
+  			
+			//scheduler set to single date in future
+			if(req.body.powtarzaj==0) {
+				console.log('scheduler single date');
+
+				//kasowanie wszystkich poprzednich zaschedulowanych eventow
+				if(schedule.scheduledJobs) {
+					for (x in schedule.scheduledJobs) {
+						//schedule.scheduledJobs[x].job();
+						schedule.scheduledJobs[x].cancel();
+					}
+				}
+
+				var date = new Date(req.body.date);
+				schedule.scheduleJob(Date.parse(date)+loc_d, function(){
+				  	console.log('Wykonanie funkcji zmiany tajemnic');
+				  	User.zmianaTajemnic(function(error, result) {
+				  		if(error) {
+				  			console.log('Błąd w trakcie zmiany tajemnic !')
+				  			req.flash('error', ' Błąd w trakcie zmiany tajemnic !');
+				  		}
+				  		else {
+				  			console.log('Zmiana tajemnic wykonana')
+				  			req.flash('error', ' Zmiana tajemnic wykonana');
+				  		}
+				  	});
+				});
+			}
+
+			//scheduler reccurence
+			if(req.body.powtarzaj>0) {
+				console.log('scheduler reccurence not yet implemented');
+			}
+
+  		}	
+	});  
+});
+
+
+//natychmiastowa zmiana tajemnic
+router.get('/zmianaTajemnic/now', function(req, res, next) {
+
+	User.zmianaTajemnic(function(error, result) {
+  		if(error) {
+  			console.log('Błąd w trakcie zmiany tajemnic !')
+  			req.flash('error', ' Błąd w trakcie zmiany tajemnic !');
+  			return res.redirect('/');
+  		}
+  		else {
+  			console.log('Zmiana tajemnic wykonana')
+  			req.flash('error', ' Zmiana tajemnic wykonana');
+  			return res.redirect('/');
+  		}
+  	});
+
+
+	// function nastepnaTajemnica(tajemnica) {
+	// 	//console.log("nastepnaTajemnica");
+	// 	var nowaTajemnica;
+	// 	if (tajemnica.number<20)
+	// 		nowaTajemnica=tajemnica.number+1;
+	// 	else
+	// 		nowaTajemnica=1;
+
+	// 	return Tajemnica.findOne({'number' : nowaTajemnica}).exec();  
+	// }
+	
+	// function updateRecord(user) {
+	// 	console.log("od aktualizacji minelo :",(Date.now() - user.updateDate)/(1000*60*60)," godzin");
+	// 	if( (Date.now() - user.updateDate) <  1000*60*60  ) { //mniej niz 1 godzina
+	// 		var err = new Error(`User ${user.email} byl juz aktualizowany.`);
+	// 		throw err;
+	// 	} else {
+	// 		return Tajemnica.findById(user.tajemnica)
+	// 		.then(nastepnaTajemnica)
+	// 		.then(nextTaj => {
+	// 			user.tajemnica = nextTaj._id;
+	// 			user.updateDate = Date.now();
+	// 			return user;
+	// 		});
+	// 	}
 			
 
-	}
+	// }
 
-	function getUserRecord(userId) {
-		console.log("getUserRecord");
-		return User
-		.findById(userId)
-		.exec(function (err,user) {
-				if (err) 
-					return err;
-				else 
-					return user; 	
-			});
-	}
+	// function getUserRecord(userId) {
+	// 	console.log("getUserRecord");
+	// 	return User
+	// 	.findById(userId)
+	// 	.exec(function (err,user) {
+	// 			if (err) 
+	// 				return err;
+	// 			else 
+	// 				return user; 	
+	// 		});
+	// }
 
-	function updateUserRecords(userId) {
-		return getUserRecord(userId)
-		.then(updateRecord)
-		.then( user => { // obsługa błędu
-			console.log("user :",user);
-			if(user instanceof User)  {
-				user.save(function (err) {
-					console.log('saved');
-					if (err) {
-						console.log(err);
-						return err;
-					}
-					return user;  
-				});	
-			}
-		// })
-		// .catch(err => {
-		// 	req.flash('error', err);
-		});
-	}
+	// function updateUserRecords(userId) {
+	// 	return getUserRecord(userId)
+	// 	.then(updateRecord)
+	// 	.then( user => { // obsługa błędu
+	// 		console.log("user :",user);
+	// 		if(user instanceof User)  {
+	// 			user.save(function (err) {
+	// 				console.log('saved');
+	// 				if (err) {
+	// 					console.log(err);
+	// 					return err;
+	// 				}
+	// 				return user;  
+	// 			});	
+	// 		}
+	// 	// })
+	// 	// .catch(err => {
+	// 	// 	req.flash('error', err);
+	// 	});
+	// }
 
-	function updateAllRecords(users) {
-		var promises = [];
-		for (i=0;i<users.length;i++) {
-			userId=users[i]._id;
-			promises.push( updateUserRecords(userId));
-		}
-		return Promise.all(promises);
-	}
+	// function updateAllRecords(users) {
+	// 	var promises = [];
+	// 	for (i=0;i<users.length;i++) {
+	// 		userId=users[i]._id;
+	// 		promises.push( updateUserRecords(userId));
+	// 	}
+	// 	return Promise.all(promises);
+	// }
 
 
-	User
-	.find()
-	.then(updateAllRecords)
-	.then(results => {
-		console.log("results: ",results);
-		req.flash('error', ' Zmiana tajemnic wykonana!');
-		return res.redirect('/');
-	})
-	.catch(err => {
-		req.flash('error', err.message);
-		return res.redirect('/');
-		//return next(err);
-	});
+	// User
+	// .find()
+	// .then(updateAllRecords)
+	// .then(results => {
+	// 	console.log("results: ",results);
+	// 	req.flash('error', ' Zmiana tajemnic wykonana!');
+	// 	return res.redirect('/');
+	// })
+	// .catch(err => {
+	// 	req.flash('error', err.message);
+	// 	return res.redirect('/');
+	// 	//return next(err);
+	// });
 
 
 });
@@ -409,95 +535,6 @@ router.get('/sendEmailToAll', function(req, res, next) {
 
 
 
-//=======SEEDERY===========================================
-router.get('/group/seeder', function(req, res, next) {
-  var groups = [
-  	new Group({
-  		name: "Bł. Michał Czartoryski",
-  		opiekun: "59367f240103e51734818597",
- 	}),
-  	new Group({
-  		name: "Św. Faustyna ",
-  		opiekun:"59367f240103e51734818598"
- 	}),
- 	new Group({
-  		name: "Św. Wincenty Pallotti",
-  		opiekun: "59367f240103e51734818599"
- 	})];
-
-var done =0;
-	for( var i=0; i<groups.length;i++) {
-	    groups[i].save(function (err, res) {
-	        done++;
-	        if(done===groups.length) //exit();
-		        Group.find( function(err, docs) {
-					if(err) next(err);
-				});
-	    });
-	}
-
-res.render('index', { title: 'Seeding group completed', data: docs });
-
-});
-
-
-
-
-
-  				
-
-/*  users seeder. */
-router.get('/seeder', function(req, res, next) {
-  var users = [
-  	new User({
-	  	email: "marek@test.pl",
-	  	name: "marek",
-	    tel: "500600700",
-	    tajemnica: '59367bef1893510c646f607d',
-	    grupa: "Bł. Michał Czartoryski",
-	    joinDate: new Date().getTime()
-  	}),
-  	new User({
-	  	email: "stefan@test.pl",
-	  	name: "stefan",
-	    tel: "500600701",
-	    tajemnica: "59367bef1893510c646f607e",
-	    grupa: "Bł. Michał Czartoryski",
-	    joinDate: new Date().getTime()
-  	}),
-  	new User({
-	  	email: "jurek@test.pl",
-	  	name: "jurek",
-	    tel: "500600702",
-	    tajemnica: "59367bef1893510c646f607f",
-	    grupa: "Bł. Michał Czartoryski",
-	    joinDate: new Date().getTime()
-  	}),
-  	new User({
-	  	email: "staszek@test.pl",
-	  	name: "staszek",
-	    tel: "500600703",
-	    tajemnica: "59367bef1893510c646f6080",
-	    grupa: "Bł. Michał Czartoryski",
-	    joinDate: new Date().getTime()
-  	}),
-
-  ];
-
-var done =0;
-	for( var i=0; i<users.length;i++) {
-	    users[i].save(function (err, res) {
-	        done++;
-	        if(done===users.length) //exit();
-		        User.find( function(err, docs) {
-		        	if(err) next(err);
-					
-				});
-	    });
-	}
-
-res.render('index', { title: 'Seeding users completed', data: docs });
-});
 
 
 module.exports = router;

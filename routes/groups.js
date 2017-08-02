@@ -31,7 +31,7 @@ router.get('/', function(req, res, next) {
   		if(err)
   			return next(err);
   		else
-    		return res.render('groups', { messages:messages, hasErrors: messages.length>0, data: docs });  
+    		return res.render('groups', { backButton:true, backLink:"/", messages:messages, hasErrors: messages.length>0, data: docs });  
   	});
 });
 
@@ -53,7 +53,7 @@ router.get('/profile/:id', function(req, res, next) {
 		  		if(err)
 		  			return next(err);
 		  		else
-		    		return res.render('groupProfile', { messages:messages, hasErrors: messages.length>0, groupData: group, usersData: users });  
+		    		return res.render('groupProfile', { backButton:true, backLink:"/groups", messages:messages, hasErrors: messages.length>0, groupData: group, usersData: users });  
 		  	});
 		}
 	});
@@ -127,7 +127,7 @@ router.get('/edit/:id', function(req, res, next) {
 		  		if(err)
 		  			return next(err);
 		  		else
-		    		return res.render('editGroupProfile', { backArrow: true, groupData: group, usersData: users });  
+		    		return res.render('editGroupProfile', { backButton:true, backLink:"/groups/profile/"+req.params.id, backArrow: true, groupData: group, usersData: users });  
 		  	});
 		}
 	});
@@ -227,7 +227,7 @@ router.get('/addUsers/:id', function(req, res, next) {
   		if(err)
   			return next(err);
   		else  		
-    		return res.render('showUsersToAdd', { group:req.params.id, data: docs, messages:messages, hasErrors: messages.length>0 });  
+    		return res.render('showUsersToAdd', { backButton:true, backLink:"/groups/profile/"+req.params.id  , group:req.params.id, data: docs, messages:messages, hasErrors: messages.length>0 });  
   	});
 
 });
@@ -280,7 +280,7 @@ router.get('/removeUsers/:id', function(req, res, next) {
   		if(err)
   			return next(err);
   		else  		
-    		return res.render('showUsersToRemove', { group:req.params.id, data: docs, messages:messages, hasErrors: messages.length>0 });  
+    		return res.render('showUsersToRemove', {backButton:true, backLink:"/groups/profile/"+req.params.id  , group:req.params.id, data: docs, messages:messages, hasErrors: messages.length>0 });  
   	});
 
 });

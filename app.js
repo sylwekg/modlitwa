@@ -51,9 +51,32 @@ app.engine('.hbs',expressHbs({
         else
           return opts.inverse(this); 
       },
+    sel: function(a,b) {
+      if(a===b) return "selected";
+    },
     json: function(context) {
       return JSON.stringify(context); 
-    } 
+    },
+    ISODate: function(inputDate) {
+      //date convertion
+      var date = new Date(inputDate);
+
+      var day = date.getDate();
+      var month = date.getMonth() + 1;
+      var year = date.getFullYear();
+      var hour = date.getHours();
+      var minute = date.getMinutes();
+      var second = "00";
+
+      if (month < 10) month = "0" + month;
+      if (day < 10) day = "0" + day;
+      if (hour <10) hour = "0" +hour;
+      if (minute <10) minute = "0" +minute;
+      
+      var today = year + "-" + month + "-" + day + "T" + hour + ":" + minute + ":" + second;
+    
+      return today; 
+    }, 
   }
 }));
 
@@ -62,17 +85,6 @@ app.engine('.hbs',expressHbs({
 
 //app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', '.hbs');
-
-
-
-handlebars.registerHelper('if_eq', function(a, b, opts) {
-    if(a === b) // Or === depending on your needs
-        return opts.fn(this);
-    else
-        return opts.inverse(this);
-});
-
-
 
 
 // uncomment after placing your favicon in /public

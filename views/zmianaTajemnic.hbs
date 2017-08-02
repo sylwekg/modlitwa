@@ -1,0 +1,72 @@
+
+{{#if hasErrors}}
+    <div class="alert alert-danger content" id="errMsg">
+        {{#each messages}}
+            <p>{{this}}</p>
+        {{/each}}
+    </div>
+{{/if}}
+
+<form action="/users/zmianaTajemnic/update" method="POST" >
+  <div class="card profile" style="max-width: 30rem;" >
+    
+    <div class="card-block">
+
+      <h4 class="card-title text-center"> <strong>Zmiana tajemnic</strong> </h4><br>
+ 
+      <div class="form-group row">
+        <label for="date" class="col-4 col-form-label">Planowa data</label>
+        <div class="col-8">
+          <input class="form-control" type="datetime-local" id="date" name="date" value="{{ISODate data.dataZmiany}}" required>
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label for="powtarzaj" class="col-4 col-form-label">Powtarzaj</label>
+        <div class="col-8">
+          <select class="form-control" id="powtarzaj" name="powtarzaj">
+            
+            <option value=0 {{sel 0 data.powtarzaj}}>nie powtarzaj</option>
+            <option value=1 {{sel 1 data.powtarzaj}}>co tydzien</option>
+            <option value=2 {{sel 2 data.powtarzaj}}>co miesiąc</option>
+            <option value=3 {{sel 3 data.powtarzaj}}>co kwartał</option>
+          </select>
+        </div>
+      </div> 
+
+      <div class="form-group">
+        <label class="custom-control custom-checkbox">
+          {{#if data.powiadomienieEmail}}
+            <input id="powiadomienieEmail" type="checkbox" class="custom-control-input" name="powiadomienieEmail" checked >
+          {{else}}
+            <input id="powiadomienieEmail" type="checkbox" class="custom-control-input" name="powiadomienieEmail" >
+          {{/if}}
+          <span class="custom-control-indicator"></span>
+          <span class="custom-control-description">Powiadomienie email w dniu zmiany</span>
+        </label>
+       
+
+      </div>
+     <br><br>
+      
+      <div class="justify">
+        <button type="submit" class="btn btn-outline-success">Zapisz</button>
+        <button type="button" class="btn btn-outline-danger" onclick="javascript:location.href='/users/zmianaTajemnic/now'" >Zmień teraz</button>
+      </div>
+        {{!-- <button type="button" onclick="javascript:location.href='/'" class="btn btn-outline-warning ">test</button> --}}
+
+
+    </div>
+  </div>
+</form>
+
+
+<script type="text/javascript">
+
+$( document ).ready(function() {
+  $('#errMsg').delay(5000).slideUp();
+});
+
+
+
+</script>

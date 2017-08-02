@@ -111,22 +111,22 @@ z-index: -1;
     margin-right: 10px;
  }   
     .back-button:link {
-        color: red;
+        color: darkred;
     }
 
     /* visited link */
     .back-button:visited {
-        color: green;
+        color: grey;
     }
 
     /* mouse over link */
     .back-button:hover {
-        color: hotpink;
+        color: grey;
     }
 
     /* selected link */
     .back-button:active {
-        color: blue;
+        color: red;
     }
 
 
