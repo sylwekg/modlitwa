@@ -11,6 +11,8 @@ var flash = require('connect-flash');
 var session = require('express-session');
 var MongoStore = require('connect-mongo')(session);
 
+const dotenv = require('dotenv').config();
+
 var app = express();
 var socket_io    = require( "socket.io" );
 var io           = socket_io();

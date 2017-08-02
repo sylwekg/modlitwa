@@ -7,14 +7,12 @@ module.exports = function(io) {
 	var fs = require('fs');
 	var schedule = require('node-schedule');
 
-
 	var User = require('../models/user');
 	var Tajemnica = require('../models/tajemnica');
 	var Group = require('../models/group');
 	var Global = require('../models/global');
 
-
-	//var jobs = [];
+	var sendEmailToAll = require('../src/sendEmailToAll');
 
 	var storage = multer.diskStorage({
 		destination: function(req, file, callback) {
@@ -27,9 +25,7 @@ module.exports = function(io) {
 	});
 
 	var upload = multer({ storage: storage });
-		
 
-	const nodemailer = require('nodemailer');
 
 	/* GET users listing. /users */
 	router.get('/', function(req, res, next) {
@@ -323,21 +319,22 @@ module.exports = function(io) {
 				});
 
 	  			
-				//scheduler set to single date in future
+				//setting scheduler to single date in future
 				if(req.body.powtarzaj==0) {
 					console.log('scheduler single date');
 
 					//kasowanie wszystkich poprzednich zaschedulowanych eventow
 					if(schedule.scheduledJobs) {
 						for (x in schedule.scheduledJobs) {
-							//schedule.scheduledJobs[x].job();
 							schedule.scheduledJobs[x].cancel();
 						}
 					}
 
 					var date = new Date(req.body.date);
 					schedule.scheduleJob(Date.parse(date)+loc_d, function(){
+					  	
 					  	console.log('Wykonanie funkcji zmiany tajemnic');
+
 					  	User.zmianaTajemnic(function(error, result) {
 					  		if(error) {
 					  			console.log('Błąd w trakcie zmiany tajemnic !')
@@ -346,6 +343,8 @@ module.exports = function(io) {
 					  		else {
 					  			console.log('Zmiana tajemnic wykonana')
 					  			req.flash('error', ' Zmiana tajemnic wykonana');
+					  			//powiadomienie mailowe o wykonaniu zmiany
+					  			sendEmailToAll(io);
 					  		}
 					  	});
 					});
@@ -355,7 +354,6 @@ module.exports = function(io) {
 				if(req.body.powtarzaj>0) {
 					console.log('scheduler reccurence not yet implemented');
 				}
-
 	  		}	
 		});  
 	});
@@ -373,6 +371,7 @@ module.exports = function(io) {
 	  		else {
 	  			console.log('Zmiana tajemnic wykonana')
 	  			req.flash('error', ' Zmiana tajemnic wykonana');
+	  			sendEmailToAll(io);
 	  			return res.redirect('/');
 	  		}
 	  	});
@@ -401,83 +400,7 @@ module.exports = function(io) {
 	//emailing /users/sendEmailToAll
 	router.get('/sendEmailToAll', function(req, res, next) {
 
-		process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-
-		// create reusable transporter object using the default SMTP transport
-		let transporter = nodemailer.createTransport({
-		    host: 'poczta.o2.pl',
-		    port: 465,
-		    pool: true,
-		    maxMessages :10,
-		    maxConnections:1,
-		    rateDelta : 4000,
-		    rateLimit : 1,	
-		    secure: true, // secure:true for port 465, secure:false for port 587
-		    auth: {
-		        user: 'messaging.system@o2.pl',
-		        pass: 'Sender123'
-		    }
-		});
-
-
-		function wyslijEmail(user,usersCount,userNo) {
-			return new Promise((resolve, reject) => { 
-				// setup email data with unicode symbols
-				let mailOptions = {
-				    from: '" Kółko różańcowe "  <messaging.system@o2.pl>', // sender address
-				    to: user.email, // list of receivers
-				    subject: 'Zmiana tajemnic', // Subject line
-				    //text: 'Hello world ?', // plain text body
-				    html: ` Witaj ${user.name},<br><br> 
-				    		Twoja nowa tajemnica to <b> ${user.tajemnica.name}.</b><br><br>
-				    		Pozdrawiam.`, // html body
-				};
-				// send mail with defined transport object
-				
-				transporter.sendMail(mailOptions, (error, info) => {
-				    if (error) {
-				        return reject(error);
-				    }
-				    console.log('Message %s sent: %s', info.messageId, info.response);
-				    io.emit('msgSent',"wysłano "+userNo+" / "+usersCount);
-				    return resolve(info);
-				});
-			});
-		}
-
-		function wyslijAllEmails(users) {
-			let count=0;
-			let promises = users.map(user => {
-				count++;
-				//io.emit('msgSent',"wysyłanie w trakcie..."+count+" / "+users.length);
-				return wyslijEmail(user,users.length,count);
-			});
-			return Promise.all(promises);
-		}
-
-
-		User
-		.find()
-		.populate('tajemnica')
-		.then(wyslijAllEmails)
-		.then(results => {
-			var success=0;
-			results.forEach(function(result) {
-				if(result.response.startsWith("250")) 
-					success++;
-			});
-			console.log("results: ",results);
-			io.emit('msgSent',"wysłano "+success+" / "+results.length+" maili");
-			req.flash('error', ' e-maile z powiadomieniem wyslane!');
-			//return res.redirect('/');
-		})
-		.catch(err => {
-			req.flash('error', err.message);
-			console.log("error: ",err.message);
-			io.emit('msgErr',err.message);
-			//return res.redirect('/');
-			//return next(err);
-		});
+		sendEmailToAll(io);
 
 	return res.redirect('/users/mailNotification');	
 	});
@@ -486,6 +409,3 @@ module.exports = function(io) {
  	return router;
 }
 
-
-
-//module.exports = router;
