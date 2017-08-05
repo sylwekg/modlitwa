@@ -1,6 +1,8 @@
 var mongoose = require("mongoose");
 var Tajemnica = require('./tajemnica'); 
 var Group = require('./group');
+var bcrypt = require("bcrypt");
+
 
 var Schema = mongoose.Schema;
 
@@ -40,15 +42,52 @@ var userSchema = new mongoose.Schema({
     foto: {
         type: String
     },  
-    // password: {
-    //     type: String,
-    //     required : true
-    // },
-    // facebookId: {
-    //     type: String
-    // }   
+    password: {
+        type: String,
+        required : true
+    },
+    facebookId: {
+        type: String
+    }   
 });
 
+
+//authentication
+userSchema.statics.authenticate = function (email, password, callback) {
+    User.findOne({ email: email})
+        .exec(function (error, user) {
+            if(error)
+                return callback(error);
+            else if(!user) {
+                var err = new Error('Uzytkownik nie znaleziony');
+                err.status = 401;
+                return callback(err);
+            }
+            bcrypt.compare(password, user.password, function (error, result) {
+                if(result)
+                    return callback(null, user);
+                else {
+                    return callback(error);
+                }
+            });
+        });
+};
+
+//pre save function to hash the pass
+userSchema.pre('save',function (next){
+    var user = this;
+    bcrypt.hash(user.password, 10, function (err, hash) {
+        if(err)
+            return next(err);
+        else{
+            user.password = hash;
+            next();
+        }
+    });
+});
+
+
+//funkcja zmiany tajemnic
 userSchema.statics.zmianaTajemnic= function( callback) {
     
     function nastepnaTajemnica(tajemnica) {
@@ -96,18 +135,18 @@ userSchema.statics.zmianaTajemnic= function( callback) {
         .then( user => { // obsługa błędu
             console.log("user :",user);
             if(user instanceof User)  {
-                user.save(function (err) {
-                    console.log('saved');
-                    if (err) {
-                        console.log(err);
-                        return err;
-                    }
-                    return user;  
-                }); 
+                User
+                .update(
+                    { _id  : user._id }, 
+                    { tajemnica : user.tajemnica,
+                    updateDate : user.updateDate },
+                    function (err, raw) {
+                        if (err) 
+                            return err;
+                        console.log('The raw response from Mongo was ', raw);
+                        return raw;
+                });
             }
-        // })
-        // .catch(err => {
-        //  req.flash('error', err);
         });
     }
 
@@ -128,13 +167,10 @@ userSchema.statics.zmianaTajemnic= function( callback) {
         console.log("results: ",results);
         //req.flash('error', ' Zmiana tajemnic wykonana!');
         return callback(null, results);
-        //return res.redirect('/');
     })
     .catch(err => {
         //req.flash('error', err.message);
         return callback(err.message);
-        //return res.redirect('/');
-        
     });
 };
 

@@ -10,6 +10,8 @@ var handlebars = require('handlebars');
 var flash = require('connect-flash');
 var session = require('express-session');
 var MongoStore = require('connect-mongo')(session);
+var passport = require('passport');
+var FacebookStrategy = require('passport-facebook').Strategy;
 
 const dotenv = require('dotenv').config();
 
@@ -21,6 +23,7 @@ app.io           = io;
 var index = require('./routes/index');
 var users = require('./routes/users')(io);
 var groups = require('./routes/groups');
+
 //DB start
 mongoose.connect('localhost:27017/modlitwapomaga');
 var db = mongoose.connection;
@@ -41,6 +44,18 @@ app.use(session({
 
 //flash messaging
 app.use(flash());
+
+//make user ID available in templates/views
+app.use(function (req, res, next) {
+    //local login
+    if(req.session.userId){
+        res.locals.currentUser = req.session.userId;
+        res.locals.userName=req.session.userName;
+        console.log('username :',res.locals.userName);
+    }
+    next();
+});
+
 
 // view engine setup
 app.engine('.hbs',expressHbs({
@@ -82,9 +97,6 @@ app.engine('.hbs',expressHbs({
   }
 }));
 
-
-
-
 //app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', '.hbs');
 
@@ -97,6 +109,63 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+
+// fb authorization
+passport.use(new FacebookStrategy({
+        clientID: process.env.FACEBOOK_APP_ID,
+        clientSecret: process.env.FACEBOOK_APP_SECRET,
+        callbackURL: 'http://localhost:3000/login/facebook/callback'
+    },
+    function(accessToken, refreshToken, profile, cb) {
+        console.log('Profil :',profile);
+        user.findOneAndUpdate({ facebookId: profile.id },
+            {facebookId:profile.id, name:profile.displayName},
+            {new:true, upsert:true},
+            function (err, user) {
+            if (err) {
+                return cb(err);
+            }
+            if (!user) {
+                return cb(null, false, { message: 'Incorrect user.' });
+            }
+         return cb(err, user);
+        });
+    }
+));
+
+
+
+passport.serializeUser(function(user, done) {
+    done(null, user.id);
+});
+
+passport.deserializeUser(function(id, done) {
+    user.findById(id, function(err, user) {
+        done(err, user);
+    });
+});
+
+// Initialize Passport and restore authentication state, if any, from the
+// session.
+app.use(passport.initialize());
+app.use(passport.session());
+
+//make user ID available in templates/views
+app.use(function (req, res, next) {
+
+    console.log('Diag session:',req.session);
+    console.log('Diag user:',req.user);
+    //fb login
+    if(req.user){
+        res.locals.currentUser = req.user._id;
+        res.locals.userName=req.user.name;
+        console.log('username :',res.locals.userName);
+    }
+    next();
+});
+
+
+//routing
 app.use('/', index);
 app.use('/users', users);
 app.use('/groups', groups);

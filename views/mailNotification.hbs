@@ -8,21 +8,18 @@
 
 
   <div class="card profile" style="max-width: 30rem;" >
-    
     <div class="card-block">
-
       <h4 class="card-title text-center"> <strong>Powiadomienia e-mail</strong> </h4>
       <br>
       <div class="alert alert-info content ">
           <p class="response"></p>
       </div>
-      
       <br>
-
-      <div class="justify">
-        <button type="button" class="btn btn-outline-danger" onclick="javascript:location.href='/users/sendEmailToAll'" >Wyslij teraz do wszystich</button>
-      </div>
-
+      <form action="/users/sendEmailToAll" method="POST" >
+        <div class="justify">
+          <button type="submit" class="btn btn-outline-danger">Wyslij teraz do wszystich</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -35,6 +32,7 @@
 $( document ).ready(function() {
   $('#errMsg').delay(5000).slideUp();
 
+//mail sending progress visualization
   var msg = document.querySelector('.response');
   msg.innerHTML='Status wysyłki : brak maili do wysłania';
   var socket = io.connect();

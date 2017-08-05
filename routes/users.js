@@ -6,6 +6,7 @@ module.exports = function(io) {
 	var multer  = require('multer');
 	var fs = require('fs');
 	var schedule = require('node-schedule');
+	var passport = require('passport');
 
 	var User = require('../models/user');
 	var Tajemnica = require('../models/tajemnica');
@@ -13,6 +14,8 @@ module.exports = function(io) {
 	var Global = require('../models/global');
 
 	var sendEmailToAll = require('../src/sendEmailToAll');
+
+	var mid = require('../middleware');
 
 	var storage = multer.diskStorage({
 		destination: function(req, file, callback) {
@@ -28,7 +31,7 @@ module.exports = function(io) {
 
 
 	/* GET users listing. /users */
-	router.get('/', function(req, res, next) {
+	router.get('/', mid.requiresLogin, function(req, res, next) {
 	  var messages = req.flash('error');
 	  User
 	  	.find()
@@ -42,11 +45,129 @@ module.exports = function(io) {
 	  });
 	});
 
-	/*  user profile /users/profile/:id */
-	router.get('/profile/:id', function(req, res, next) {
-		var messages = req.flash('error');
+//===================USERS AUTHENTICATION ==================================================
 
-	  User
+	router.get('/login',mid.loggedOut, function (req, res, next) {
+	    var messages = req.flash('error');
+	    return res.render('login', { messages:messages, hasErrors: messages.length>0});
+	});
+
+
+	router.post('/login',function(req, res, next){
+	    if (req.body.email && req.body.password) {
+	        User.authenticate(req.body.email, req.body.password, function (error, user) {
+	            if(error || !user) {
+	                var err = new Error('Wrong email or password - test');
+	                err.status = 401;
+	                req.flash('error', 'Wrong email or password');
+	                return res.redirect('/users/login');
+	                
+	            } else {
+	                req.session.userId = user._id;
+	                req.session.userName = user.name;
+	           //========= odnosnik do profilu obecnie zalogowanego uzytkownika:
+	                return res.redirect('/users/profile/'+req.session.userId);   
+	            }
+	        });
+	    } else {
+	        var err = new Error('Email and password are required');
+	        err.status = 401;
+	        return next(err);
+	    }
+	});
+
+
+	router.get('/logout',function (req, res, next) {
+	    if(req.session) {
+	        req.session.destroy(function (err) {
+	            if(err)
+	                return next(err);
+	            else
+	                return res.redirect('/');
+	        });
+	    }
+	});
+
+	//users/register
+	router.get('/register', mid.loggedOut, function(req, res, next){
+	    var messages = req.flash('error');
+	    return res.render('registerProfile', { messages:messages, hasErrors: messages.length>0});
+	});
+
+
+	router.post('/register', upload.single('foto'), function(req, res, next){
+	  	console.log(req.body);
+	  	if(req.body.email && req.body.name && req.body.password ) {	
+			var foto, grupa;
+			if(req.file) {
+				var ext = path.extname(req.file.originalname)
+				if (ext !== '.png' && ext !== '.jpg' && ext !== '.gif' && ext !== '.jpeg'&& ext !== '.JPEG' && ext !== '.JPG' && ext !== '.GIF' && ext !== '.PNG' ) {
+					req.flash('error', 'Zły format zdjecia, zdjecie nie zostało zmienione.');
+				} else {
+					foto=req.file.filename;
+				}
+			}
+			else
+				foto="avatar.jpg";
+
+  			var newUser = new User({
+			  	email: req.body.email,
+			  	name: req.body.name,
+			  	password: req.body.password,
+			    tel: req.body.tel,
+			    foto: foto,
+			    joinDate: new Date().getTime()
+		  		});
+
+			newUser.save(function (err, newUser) {
+  				if(err) {
+	                if(err.message.startsWith("E11000"))
+	                    req.flash('error', 'Podany e-mail juz istnieje. ');
+	                else
+	                    req.flash('error', 'Błąd bazy danych. Spróbuj ponownie ');
+	                return res.redirect('/users/register');
+  				}
+  				else {
+  					res.status(201);
+  					req.session.userId = newUser._id;
+  					req.session.userName = newUser.name;	
+					return res.redirect('/users/profile/'+req.session.userId);
+  				}
+  			});
+		}
+		else {
+			var err = new Error('All fields required.');
+	        err.status = 400;
+	        req.flash('error', 'All fields required');
+	        return res.redirect('/users/register');
+		}
+	});
+
+
+	// router.get('/login/facebook',passport.authenticate('facebook',{scope:'public_profile'}));
+
+	// router.get('/login/facebook/callback', passport.authenticate('facebook', {
+	//     successRedirect: '/profile',
+	//     failureRedirect: '/login',
+	//     failureFlash: true
+	// }));
+
+	
+
+
+
+
+
+
+
+
+//=================USERS MANAGEMENT=====================================================
+
+	/*  user profile /users/profile/:id */
+	router.get('/profile/:id', mid.requiresLogin, function(req, res, next) {
+		var messages = req.flash('error');	
+
+		User
 	  	.findById(req.params.id) 
 	  	.populate('tajemnica')
 	  	.populate('grupa')
@@ -55,7 +176,7 @@ module.exports = function(io) {
 	  			return next(err);
 	  		else
 	    		return res.render('showProfile', { backButton:true, backLink:"/users" ,data: docs , messages:messages, hasErrors: messages.length>0});  
-	  });
+		});
 	});
 
 
@@ -118,7 +239,7 @@ module.exports = function(io) {
 		}
 	});
 
-	router.get('/add', function(req, res, next) {
+	router.get('/add', mid.requiresLogin, function(req, res, next) {
 		var messages = req.flash('error');
 
 		Tajemnica
@@ -146,7 +267,7 @@ module.exports = function(io) {
 
 
 	/* delete /users/delete/:id  */
-	router.get('/delete/:id', function(req, res, next) {
+	router.get('/delete/:id', mid.requiresLogin, function(req, res, next) {
 		User
 	  	.findById(req.params.id) 
 	  	.exec( function(err, usr) {
@@ -176,7 +297,7 @@ module.exports = function(io) {
 
 
 	/* Edit user   /users/edit/:id     */
-	router.get('/edit/:id', function(req, res, next) {
+	router.get('/edit/:id', mid.requiresLogin, function(req, res, next) {
 		User
 	  	.findById(req.params.id) 
 	  	.populate('tajemnica')
@@ -213,47 +334,36 @@ module.exports = function(io) {
 		console.log(req.body);
 		console.log(req.file);
 
+		var updatedUser = {
+				name : req.body.name, 
+	  			email : req.body.email, 
+	  			tel : req.body.tel,
+				tajemnica : req.body.tajemnica, 
+				updateDate: new Date().getTime(),
+				grupa: (req.body.grupa==="0") ?  null : req.body.grupa};
+
+		if(req.file) {
+			var ext = path.extname(req.file.originalname)
+			if (ext !== '.png' && ext !== '.jpg' && ext !== '.gif' && ext !== '.jpeg'&& ext !== '.JPEG' && ext !== '.JPG' && ext !== '.GIF' && ext !== '.PNG' ) {
+				req.flash('error', 'Zły format zdjecia, zdjecie nie zostało zmienione.');
+			} else {
+				updatedUser.foto=req.file.filename;
+			}
+		}
+
 		User
-	  	.findById(req.params.id) 
-	  	.exec( function(err, user) {
-	  		if(err)
-	  			return next(err);
-	  		else {
-	  			user.name=req.body.name;
-	  			user.email=req.body.email;
-				user.tel=req.body.tel;
-				user.tajemnica=req.body.tajemnica;
-				user.updateDate= new Date().getTime();
-
-				if(req.body.grupa==="0")
-					user.grupa=null;
-				else
-					user.grupa=req.body.grupa;	
-
-				if(req.file) {
-					var ext = path.extname(req.file.originalname)
-					if (ext !== '.png' && ext !== '.jpg' && ext !== '.gif' && ext !== '.jpeg'&& ext !== '.JPEG' && ext !== '.JPG' && ext !== '.GIF' && ext !== '.PNG' ) {
-						req.flash('error', 'Zły format zdjecia, zdjecie nie zostało zmienione.');
-					} else {
-						user.foto=req.file.filename;
-					}
-				}
-				// else
-				// 	user.foto="avatar.jpg";
-
-	  			user.save( function(err, updatedUser) {
-	  				if(err) 
-	  					return next(err);
-	  				else
-	  					return res.redirect('/users/profile/'+req.params.id);
-	    		});
-	  		}
-	  	});
+	  	.update({ _id  : req.params.id }, updatedUser, function (err, raw) {
+			if (err) 
+				return next(err);
+			console.log('The raw response from Mongo was ', raw);
+			return res.redirect('/users/profile/'+req.params.id);
+		}); 
 	});
 
+//=================== FUNCJE ZARZADZANIA TAJEMNICAMI============================================
 
 	/* request o zmiane tejemnic /users/zmianaTajemnic  */
-	router.get('/zmianaTajemnic', function(req, res, next) {
+	router.get('/zmianaTajemnic', mid.requiresLogin ,function(req, res, next) {
 		var messages = req.flash('error');
 		console.log(schedule.scheduledJobs);
 		
@@ -360,7 +470,7 @@ module.exports = function(io) {
 
 
 	//natychmiastowa zmiana tajemnic
-	router.get('/zmianaTajemnic/now', function(req, res, next) {
+	router.get('/zmianaTajemnic/now', mid.requiresLogin, function(req, res, next) {
 
 		User.zmianaTajemnic(function(error, result) {
 	  		if(error) {
@@ -378,7 +488,7 @@ module.exports = function(io) {
 	});
 
 	//emailing /users/mailNotificaton
-	router.get('/mailNotification', function(req, res, next) {
+	router.get('/mailNotification', mid.requiresLogin ,function(req, res, next) {
 		var messages = req.flash('error');
 		//load data
 		//.........
@@ -388,17 +498,9 @@ module.exports = function(io) {
 	});
 
 
-	//emailing /users/mailNotificaton
-	router.post('/mailNotification', function(req, res, next) {
-		console.log('fake data save: ',req.body);
-		//..........
-		return res.render('mailNotification');
-
-	});
-
 	//OPCJA #1 wysylanie ze zwykłego konta na serwerze o2.pl
 	//emailing /users/sendEmailToAll
-	router.get('/sendEmailToAll', function(req, res, next) {
+	router.post('/sendEmailToAll', function(req, res, next) {
 
 		sendEmailToAll(io);
 

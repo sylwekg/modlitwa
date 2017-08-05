@@ -7,6 +7,8 @@ var path = require('path');
 var multer  = require('multer');
 var fs = require('fs');
 
+var mid = require('../middleware');
+
 var storage = multer.diskStorage({
 	destination: function(req, file, callback) {
 		callback(null, 'public/images/')
@@ -22,7 +24,7 @@ var upload = multer({ storage: storage });
 
 
 // GET     /groups listing
-router.get('/', function(req, res, next) {
+router.get('/', mid.requiresLogin, function(req, res, next) {
 	var messages = req.flash('error');
   	Group
   	.find()
@@ -36,7 +38,7 @@ router.get('/', function(req, res, next) {
 });
 
 /*  group profile /groups/profile/:id */
-router.get('/profile/:id', function(req, res, next) {
+router.get('/profile/:id', mid.requiresLogin, function(req, res, next) {
 	var messages = req.flash('error');
 
   	User
@@ -57,13 +59,12 @@ router.get('/profile/:id', function(req, res, next) {
 		  	});
 		}
 	});
-
 });
 
 
 // add group
 //   /groups/add
-router.get('/add', function(req, res, next) { 
+router.get('/add', mid.requiresLogin, function(req, res, next) { 
   	User
   	.find()
   	.exec( function(err, users) {
@@ -112,7 +113,7 @@ router.post('/add',upload.single('foto'), function(req, res, next) {
 
 // edit group
 //  /groups/edit/:id
-router.get('/edit/:id', function(req, res, next) {
+router.get('/edit/:id', mid.requiresLogin, function(req, res, next) {
   	User
   	.find()   //{'grupa': req.params.id }
 	.populate('tajemnica')
@@ -131,7 +132,6 @@ router.get('/edit/:id', function(req, res, next) {
 		  	});
 		}
 	});
-
 });
 
 //  /groups/edit/:id
@@ -172,7 +172,7 @@ router.post('/edit/:id', upload.single('foto'), function(req, res, next) {
 
 // delete group
 //  /groups/delete/:id
-router.get('/delete/:id', function(req, res, next) {
+router.get('/delete/:id', mid.requiresLogin, function(req, res, next) {
 
 	User
 	.find({grupa:req.params.id})
@@ -215,8 +215,8 @@ router.get('/delete/:id', function(req, res, next) {
 	});
 });
 
-// add users to group to group(id)   /groups/addUsers/:id  
-router.get('/addUsers/:id', function(req, res, next) {
+// add users to group(id)   /groups/addUsers/:id  
+router.get('/addUsers/:id', mid.requiresLogin, function(req, res, next) {
   	var messages = req.flash('error');
 
   	User
@@ -229,7 +229,6 @@ router.get('/addUsers/:id', function(req, res, next) {
   		else  		
     		return res.render('showUsersToAdd', { backButton:true, backLink:"/groups/profile/"+req.params.id  , group:req.params.id, data: docs, messages:messages, hasErrors: messages.length>0 });  
   	});
-
 });
 
 router.post('/addUsers/:id', function(req, res, next) {
@@ -246,30 +245,24 @@ router.post('/addUsers/:id', function(req, res, next) {
 	});
 
 	p1.then(function(val) {
-		User.
-		find({'_id': { $in: val }}, function(err, users){
-			if(err)
-	  			return next(err);
-	  		else {
-	  			users.map((user)=>{
-	  				user.grupa=req.params.id;
-	  				user.save();
-	  			});
-	  			console.log(users);
+		User
+		.update(
+			{'_id': { $in: val }}, {grupa:req.params.id}, { multi: true}, function (err, raw) {
+			if (err) 
+				return next(err);
+			console.log('The raw response from Mongo was ', raw);
 
-	  			if(users.length==0)
-	  				req.flash('error', 'Nie dodano użytkowników!');	
-	  			else
-	  				req.flash('error', ' Dodano '+ users.length+' użytkowników!');	
-
-				return res.redirect('/groups/profile/'+req.params.id);
-	  		}
+			if(raw.nModified==0)
+	  			req.flash('error', 'Nie dodano użytkowników!');	
+	  		else
+	  			req.flash('error', ' Dodano do grupy '+ raw.nModified+' użytkowników!');
+			return res.redirect('/groups/profile/'+req.params.id);
 		});
 	});
 });
 
 // remove users from group(id)   /groups/removeUsers/:id  
-router.get('/removeUsers/:id', function(req, res, next) {
+router.get('/removeUsers/:id', mid.requiresLogin, function(req, res, next) {
   	var messages = req.flash('error');
 
   	User
@@ -282,7 +275,6 @@ router.get('/removeUsers/:id', function(req, res, next) {
   		else  		
     		return res.render('showUsersToRemove', {backButton:true, backLink:"/groups/profile/"+req.params.id  , group:req.params.id, data: docs, messages:messages, hasErrors: messages.length>0 });  
   	});
-
 });
 
 router.post('/removeUsers/:id', function(req, res, next) {
@@ -300,25 +292,17 @@ router.post('/removeUsers/:id', function(req, res, next) {
 	});
 
 	p1.then(function(val) {
-		User.
-		find({'_id': { $in: val }}, function(err, users){
-			if(err)
-	  			return next(err);
-	  		else {
-	  			users.map((user)=>{
-	  				user.grupa=null;
-	  				user.save();
-	  			});
-	  			console.log(users);
-	  			req.flash('error', ' Usunięto '+ users.length+' użytkowników!');	
-				return res.redirect('/groups/profile/'+req.params.id);
-	  		}
+		User
+		.update(
+			{'_id': { $in: val }}, {grupa:null}, { multi: true}, function (err, raw) {
+			if (err) 
+				return next(err);
+			console.log('The raw response from Mongo was ', raw);
+	  		req.flash('error', ' Usunięto z grupy '+ raw.nModified+' użytkowników!');
+			return res.redirect('/groups/profile/'+req.params.id);
 		});
 	});
-
 });
-
-
 
 
 module.exports = router;
