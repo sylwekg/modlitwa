@@ -39,7 +39,7 @@ app.use(session({
     store : new MongoStore({
         mongooseConnection : db
     }),
-    cookie: { maxAge: 60000*5 }
+    cookie: { maxAge: 60000*60 }
 }));
 
 //flash messaging
@@ -70,6 +70,9 @@ app.engine('.hbs',expressHbs({
       },
     sel: function(a,b) {
       if(a===b) return "selected";
+    },
+    selSC: function(a,b) {
+      if(a==b) return "selected";
     },
     json: function(context) {
       return JSON.stringify(context); 

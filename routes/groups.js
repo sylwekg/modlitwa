@@ -7,7 +7,7 @@ var path = require('path');
 var multer  = require('multer');
 var fs = require('fs');
 
-var mid = require('../middleware');
+var mid = require('../middleware/login');
 
 var storage = multer.diskStorage({
 	destination: function(req, file, callback) {
@@ -24,7 +24,7 @@ var upload = multer({ storage: storage });
 
 
 // GET     /groups listing
-router.get('/', mid.requiresLogin, function(req, res, next) {
+router.get('/', mid.requiresOpiekun, function(req, res, next) {
 	var messages = req.flash('error');
   	Group
   	.find()
@@ -38,7 +38,7 @@ router.get('/', mid.requiresLogin, function(req, res, next) {
 });
 
 /*  group profile /groups/profile/:id */
-router.get('/profile/:id', mid.requiresLogin, function(req, res, next) {
+router.get('/profile/:id', mid.requiresOpiekun, function(req, res, next) {
 	var messages = req.flash('error');
 
   	User
@@ -64,7 +64,7 @@ router.get('/profile/:id', mid.requiresLogin, function(req, res, next) {
 
 // add group
 //   /groups/add
-router.get('/add', mid.requiresLogin, function(req, res, next) { 
+router.get('/add', mid.requiresAdmin, function(req, res, next) { 
   	User
   	.find()
   	.exec( function(err, users) {
@@ -77,7 +77,7 @@ router.get('/add', mid.requiresLogin, function(req, res, next) {
 });
 
 
-router.post('/add',upload.single('foto'), function(req, res, next) { 
+router.post('/add', mid.requiresAdmin, upload.single('foto'), function(req, res, next) { 
 	console.log(req.body);
 	console.log(req.file);
 
@@ -113,7 +113,7 @@ router.post('/add',upload.single('foto'), function(req, res, next) {
 
 // edit group
 //  /groups/edit/:id
-router.get('/edit/:id', mid.requiresLogin, function(req, res, next) {
+router.get('/edit/:id', mid.requiresAdmin, function(req, res, next) {
   	User
   	.find()   //{'grupa': req.params.id }
 	.populate('tajemnica')
@@ -135,7 +135,7 @@ router.get('/edit/:id', mid.requiresLogin, function(req, res, next) {
 });
 
 //  /groups/edit/:id
-router.post('/edit/:id', upload.single('foto'), function(req, res, next) {
+router.post('/edit/:id', mid.requiresAdmin, upload.single('foto'), function(req, res, next) {
 	console.log(req.body);
 	console.log(req.file);
 
@@ -172,7 +172,7 @@ router.post('/edit/:id', upload.single('foto'), function(req, res, next) {
 
 // delete group
 //  /groups/delete/:id
-router.get('/delete/:id', mid.requiresLogin, function(req, res, next) {
+router.get('/delete/:id', mid.requiresAdmin, function(req, res, next) {
 
 	User
 	.find({grupa:req.params.id})
@@ -216,7 +216,7 @@ router.get('/delete/:id', mid.requiresLogin, function(req, res, next) {
 });
 
 // add users to group(id)   /groups/addUsers/:id  
-router.get('/addUsers/:id', mid.requiresLogin, function(req, res, next) {
+router.get('/addUsers/:id', mid.requiresAdmin, function(req, res, next) {
   	var messages = req.flash('error');
 
   	User
@@ -231,7 +231,7 @@ router.get('/addUsers/:id', mid.requiresLogin, function(req, res, next) {
   	});
 });
 
-router.post('/addUsers/:id', function(req, res, next) {
+router.post('/addUsers/:id', mid.requiresAdmin, function(req, res, next) {
 	console.log(req.body);
 
 	var p1=new Promise((resolve, reject) => {
@@ -262,7 +262,7 @@ router.post('/addUsers/:id', function(req, res, next) {
 });
 
 // remove users from group(id)   /groups/removeUsers/:id  
-router.get('/removeUsers/:id', mid.requiresLogin, function(req, res, next) {
+router.get('/removeUsers/:id', mid.requiresAdmin, function(req, res, next) {
   	var messages = req.flash('error');
 
   	User
@@ -277,7 +277,7 @@ router.get('/removeUsers/:id', mid.requiresLogin, function(req, res, next) {
   	});
 });
 
-router.post('/removeUsers/:id', function(req, res, next) {
+router.post('/removeUsers/:id', mid.requiresAdmin, function(req, res, next) {
 	console.log(req.body);
 
 	var p1=new Promise((resolve, reject) => {

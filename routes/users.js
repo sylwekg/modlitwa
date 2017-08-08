@@ -15,7 +15,7 @@ module.exports = function(io) {
 
 	var sendEmailToAll = require('../src/sendEmailToAll');
 
-	var mid = require('../middleware');
+	var mid = require('../middleware/login');
 
 	var storage = multer.diskStorage({
 		destination: function(req, file, callback) {
@@ -31,7 +31,7 @@ module.exports = function(io) {
 
 
 	/* GET users listing. /users */
-	router.get('/', mid.requiresLogin, function(req, res, next) {
+	router.get('/', mid.requiresAdmin, function(req, res, next) {
 	  var messages = req.flash('error');
 	  User
 	  	.find()
@@ -143,6 +143,49 @@ module.exports = function(io) {
 		}
 	});
 
+	//users/priv - setting users privileges
+	router.get('/priv', mid.requiresAdmin, function(req, res, next) {
+		var messages = req.flash('error');
+		User
+		.find()
+		.exec( function(err, docs) {
+			if(err)
+		  		return next(err);
+		  	else  		
+		    	return res.render('priv', { backButton:true, backLink:"/", data: docs, messages:messages, hasErrors: messages.length>0 });  
+		});
+	});
+
+	router.post('/priv', mid.requiresAdmin, function(req, res, next) {
+		modList=req.body;	
+		var pa=Object.keys(modList).map((e) => {
+			//console.log(`...updating user=${e} new role=${modList[e]}`);
+			return new Promise((resolve, reject) => {
+				User
+				.update(
+					{_id: e}, {role:modList[e]}, function (err, raw) {
+					if (err) 	
+						reject (err);
+					resolve (raw);
+				});
+			});
+		});
+		
+		Promise.all(pa).then(values => {
+			console.log("cumulative",values);
+			let i=0;
+			values.forEach((item, index)=> {
+				if(item.ok==1) i++;
+			});
+			req.flash('error', "Modified "+i+ " users");
+			//console.log('===============> ',i)
+		}).catch(reason => { 
+  			console.log(reason);
+  			req.flash('error', reason);
+		});
+		return res.redirect('/users/priv');
+	});
+
 
 	// router.get('/login/facebook',passport.authenticate('facebook',{scope:'public_profile'}));
 
@@ -152,19 +195,12 @@ module.exports = function(io) {
 	//     failureFlash: true
 	// }));
 
-	
-
-
-
-
-
-
 
 
 //=================USERS MANAGEMENT=====================================================
 
 	/*  user profile /users/profile/:id */
-	router.get('/profile/:id', mid.requiresLogin, function(req, res, next) {
+	router.get('/profile/:id', mid.requiresAplikant, mid.profileCrossCheck, function(req, res, next) {
 		var messages = req.flash('error');	
 
 		User
@@ -181,7 +217,7 @@ module.exports = function(io) {
 
 
 	/* Add user    /users/add    */
-	router.post('/add',upload.single('foto'), function(req, res, next) {
+	router.post('/add', mid.requiresAdmin, upload.single('foto'), function(req, res, next) {
 	  	console.log(req.body);
 	  	if(req.body.email && req.body.name) {	
 		  	Tajemnica
@@ -239,7 +275,7 @@ module.exports = function(io) {
 		}
 	});
 
-	router.get('/add', mid.requiresLogin, function(req, res, next) {
+	router.get('/add', mid.requiresAdmin, function(req, res, next) {
 		var messages = req.flash('error');
 
 		Tajemnica
@@ -267,7 +303,7 @@ module.exports = function(io) {
 
 
 	/* delete /users/delete/:id  */
-	router.get('/delete/:id', mid.requiresLogin, function(req, res, next) {
+	router.get('/delete/:id', mid.requiresAdmin, function(req, res, next) {
 		User
 	  	.findById(req.params.id) 
 	  	.exec( function(err, usr) {
@@ -297,7 +333,7 @@ module.exports = function(io) {
 
 
 	/* Edit user   /users/edit/:id     */
-	router.get('/edit/:id', mid.requiresLogin, function(req, res, next) {
+	router.get('/edit/:id', mid.requiresAdmin, function(req, res, next) {
 		User
 	  	.findById(req.params.id) 
 	  	.populate('tajemnica')
@@ -330,7 +366,7 @@ module.exports = function(io) {
 	    });
 	});
 
-	router.post('/edit/:id', upload.single('foto'), function(req, res, next) {
+	router.post('/edit/:id', mid.requiresAdmin, upload.single('foto'), function(req, res, next) {
 		console.log(req.body);
 		console.log(req.file);
 
@@ -363,7 +399,7 @@ module.exports = function(io) {
 //=================== FUNCJE ZARZADZANIA TAJEMNICAMI============================================
 
 	/* request o zmiane tejemnic /users/zmianaTajemnic  */
-	router.get('/zmianaTajemnic', mid.requiresLogin ,function(req, res, next) {
+	router.get('/zmianaTajemnic', mid.requiresAdmin ,function(req, res, next) {
 		var messages = req.flash('error');
 		console.log(schedule.scheduledJobs);
 		
@@ -394,7 +430,7 @@ module.exports = function(io) {
 	});
 
 	//aktualizacja daty zaplanowanej dla zmiany tajemnic
-	router.post('/zmianaTajemnic/update', function(req, res, next) {
+	router.post('/zmianaTajemnic/update',mid.requiresAdmin, function(req, res, next) {
 		console.log("formularz przysłał",req.body);
 
 		Global
@@ -470,7 +506,7 @@ module.exports = function(io) {
 
 
 	//natychmiastowa zmiana tajemnic
-	router.get('/zmianaTajemnic/now', mid.requiresLogin, function(req, res, next) {
+	router.get('/zmianaTajemnic/now', mid.requiresAdmin, function(req, res, next) {
 
 		User.zmianaTajemnic(function(error, result) {
 	  		if(error) {
@@ -488,7 +524,7 @@ module.exports = function(io) {
 	});
 
 	//emailing /users/mailNotificaton
-	router.get('/mailNotification', mid.requiresLogin ,function(req, res, next) {
+	router.get('/mailNotification', mid.requiresAdmin ,function(req, res, next) {
 		var messages = req.flash('error');
 		//load data
 		//.........
@@ -500,7 +536,7 @@ module.exports = function(io) {
 
 	//OPCJA #1 wysylanie ze zwykłego konta na serwerze o2.pl
 	//emailing /users/sendEmailToAll
-	router.post('/sendEmailToAll', function(req, res, next) {
+	router.post('/sendEmailToAll', mid.requiresAdmin, function(req, res, next) {
 
 		sendEmailToAll(io);
 
