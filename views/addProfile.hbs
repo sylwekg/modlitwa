@@ -10,15 +10,31 @@
 <form action="/users/add" method="POST" enctype="multipart/form-data">
 	<div class="card profile" style="max-width: 30rem;" >
 	  
-	  <img class="card-img-top img-circle" src="/images/avatar.jpg" alt="user" width="150" id="frame">
+{{!-- 	  <img class="card-img-top img-circle" src="/images/avatar.jpg" alt="user" width="150" id="frame"> --}}
+
+	  <div class="justify card-img-top">
+		  
+		  <img class="upload-demo" id="upload-demo" src="/images/avatar.jpg" width="150" height="150" />
+		  {{!-- <div class="upload-demo" id="upload-demo"> </div> --}}
+	  </div>
+
+
+	  <input type="hidden" name="foto" id="imageData64"/>
+
 
 	  <div class="card-block">
 
-	  	  <div class="card-img-top">
-	  		<input class="btn btn-outline-success inputfile" type="file" accept="image/*" name="foto" id="camera" >
-	  		{{!-- capture="camera" --}}
-	  		<label class="btn btn-outline-success justify" for="camera">Change a foto (required format 600x600)</label>
+	  	  <div class="card-img-top justify">
+		  	<label class="btn btn-outline-success " for="upload">Upload photo max 500kB </label>
+		  	<input class="btn btn-outline-success inputfile" type="file" id="upload" accept="image/*" name="uploadFile">
+		  	<input class="btn btn-outline-danger " id="crop" type="button"  value="crop">
 	  	  </div>
+		  <br>
+
+{{!-- 	  	  <div class="card-img-top">
+	  		<input class="btn btn-outline-success inputfile" type="file" accept="image/*" name="foto" id="camera" >
+	  		<label class="btn btn-outline-success justify" for="camera">Change a foto (required format 600x600)</label>
+	  	  </div> --}}
 
 		  <div class="form-group row">
 			  <label for="name" class="col-2 col-form-label">Imie/Naz</label>
@@ -79,16 +95,84 @@
 $( document ).ready(function() {
 	$('#errMsg').delay(5000).slideUp();
 
-	//obsługa wyboru zdjecia 
-	  var camera = document.getElementById('camera');
-	  var frame = document.getElementById('frame');
+	//stara obsługa wyboru zdjecia 
+	  // var camera = document.getElementById('camera');
+	  // var frame = document.getElementById('frame');
 
-	  camera.addEventListener('change', function(e) {
-	    var file = e.target.files[0]; 
-	    // Do something with the image file.
-	    frame.src = URL.createObjectURL(file);
-	  });
+	  // camera.addEventListener('change', function(e) {
+	  //   var file = e.target.files[0]; 
+	  //   // Do something with the image file.
+	  //   frame.src = URL.createObjectURL(file);
+	  // });
 
+
+	//nowa obsługa zdjecia
+	var $uploadCrop;
+	var reader = new FileReader();
+
+	$("#crop").hide();
+	
+	function readFile(input) {
+		//console.log(input.files[0]);
+		if (input.files && input.files[0] ) {
+ 			if(input.files[0].size < 500000) {
+	            if(reader)
+	            	delete reader;
+	            reader = new FileReader();
+	            reader.onload = function (e) {
+					$('.upload-demo').addClass('ready');
+
+
+					if($uploadCrop)
+            			$uploadCrop.croppie('destroy');
+
+					$uploadCrop = $('#upload-demo').croppie({
+						viewport: {
+							width: 150,
+							height: 150,
+							type: 'square'
+						},
+						enableExif: true,
+						boundary: {
+					        width: 200,
+					        height: 200
+						},
+						enableOrientation: true
+					});
+
+	            	$uploadCrop.croppie('bind', {
+	            		url: e.target.result
+	            	}).then(function(){
+	            		console.log('jQuery bind complete');
+	            	});
+
+	            	$("#crop").show();
+	            }
+	            reader.readAsDataURL(input.files[0]);
+        	}
+        	else
+        		alert("File too big - should be less than 500kB");
+        }
+        // else 
+	       //  alert("you're browser doesn't support the FileReader API"); 
+	}
+
+
+	$('#upload').on('change', function () { readFile(this); });
+
+	$('#crop').on('click', function (ev) {
+		$uploadCrop.croppie('result', {
+			type: 'canvas',
+			size: 'viewport'
+		}).then(function (resp) {
+			console.log(resp);
+			//frame.src=resp;  
+			document.getElementById('upload-demo').src=resp;
+			document.getElementById('imageData64').value = resp;
+			$uploadCrop.croppie('destroy');
+			$("#crop").hide();
+		});
+	});
 });
 
 

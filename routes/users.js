@@ -14,6 +14,7 @@ module.exports = function(io) {
 	var Global = require('../models/global');
 
 	var sendEmailToAll = require('../src/sendEmailToAll');
+	var utils = require('../src/utils');
 
 	var mid = require('../middleware/login');
 
@@ -95,16 +96,29 @@ module.exports = function(io) {
 	});
 
 
-	router.post('/register', upload.single('foto'), function(req, res, next){
-	  	console.log(req.body);
+	router.post('/register', upload.any(), function(req, res, next){
+	  	console.log('req.body::>>',req.body);
+		console.log('req.files::>>',req.files);	
+
+		if(req.body.foto){
+			var imageBuffer = utils.decodeBase64Image(req.body.foto);
+			//console.log(imageBuffer);
+			fs.writeFile(req.files[0].path, imageBuffer.data, function(err) { 
+				if(err)
+					return(err);
+				console.log('doc saved succesfuly');
+				//var err = new Error('All fields required.'); 
+			});
+		}
+
 	  	if(req.body.email && req.body.name && req.body.password ) {	
 			var foto, grupa;
-			if(req.file) {
-				var ext = path.extname(req.file.originalname)
+			if(req.files[0]) {
+				var ext = path.extname(req.files[0].originalname)
 				if (ext !== '.png' && ext !== '.jpg' && ext !== '.gif' && ext !== '.jpeg'&& ext !== '.JPEG' && ext !== '.JPG' && ext !== '.GIF' && ext !== '.PNG' ) {
 					req.flash('error', 'Zły format zdjecia, zdjecie nie zostało zmienione.');
 				} else {
-					foto=req.file.filename;
+					foto=req.files[0].filename;
 				}
 			}
 			else
@@ -217,8 +231,21 @@ module.exports = function(io) {
 
 
 	/* Add user    /users/add    */
-	router.post('/add', mid.requiresAdmin, upload.single('foto'), function(req, res, next) {
+	router.post('/add', mid.requiresAdmin, upload.any(), function(req, res, next) {
 	  	console.log(req.body);
+
+		if(req.body.foto){
+			var imageBuffer = utils.decodeBase64Image(req.body.foto);
+			//console.log(imageBuffer);
+			fs.writeFile(req.files[0].path, imageBuffer.data, function(err) { 
+				if(err)
+					return(err);
+				console.log('foto saved succesfuly');
+				//var err = new Error('All fields required.'); 
+			});
+		}	  	
+
+
 	  	if(req.body.email && req.body.name) {	
 		  	Tajemnica
 		  	.findOne({'number': req.body.tajemnica })
@@ -227,12 +254,12 @@ module.exports = function(io) {
 		  			return next(err);
 		  		else {
 	  				var foto, grupa;
-					if(req.file) {
-						var ext = path.extname(req.file.originalname)
+					if(req.files[0]) {
+						var ext = path.extname(req.files[0].originalname)
 						if (ext !== '.png' && ext !== '.jpg' && ext !== '.gif' && ext !== '.jpeg'&& ext !== '.JPEG' && ext !== '.JPG' && ext !== '.GIF' && ext !== '.PNG' ) {
 							req.flash('error', 'Zły format zdjecia, zdjecie nie zostało zmienione.');
 						} else {
-							foto=req.file.filename;
+							foto=req.files[0].filename;
 						}
 					}
 					else
@@ -250,6 +277,7 @@ module.exports = function(io) {
 					    tajemnica: tajemnica._id,
 					    grupa: grupa,
 					    foto: foto,
+					    password: "user",
 					    joinDate: new Date().getTime()
 				  		});
 
@@ -257,8 +285,11 @@ module.exports = function(io) {
 		  				if(err) {
 			                if(err.message.startsWith("E11000"))
 			                    req.flash('error', 'Podany e-mail juz istnieje. ');
-			                else
+			                else {
 			                    req.flash('error', 'Błąd bazy danych. Spróbuj ponownie ');
+			                    console.log(err);
+			                }
+
 			                return res.redirect('/users/add');
 		  				}
 		  				res.status(201);
@@ -366,9 +397,20 @@ module.exports = function(io) {
 	    });
 	});
 
-	router.post('/edit/:id', mid.requiresAdmin, upload.single('foto'), function(req, res, next) {
+	router.post('/edit/:id', mid.requiresAdmin, upload.any(), function(req, res, next) {
 		console.log(req.body);
 		console.log(req.file);
+
+		if(req.body.foto){
+			var imageBuffer = utils.decodeBase64Image(req.body.foto);
+			//console.log(imageBuffer);
+			fs.writeFile(req.files[0].path, imageBuffer.data, function(err) { 
+				if(err)
+					return(err);
+				console.log('doc saved succesfuly');
+				//var err = new Error('All fields required.'); 
+			});
+		}
 
 		var updatedUser = {
 				name : req.body.name, 
@@ -378,12 +420,12 @@ module.exports = function(io) {
 				updateDate: new Date().getTime(),
 				grupa: (req.body.grupa==="0") ?  null : req.body.grupa};
 
-		if(req.file) {
-			var ext = path.extname(req.file.originalname)
+		if(req.files[0]) {
+			var ext = path.extname(req.files[0].originalname)
 			if (ext !== '.png' && ext !== '.jpg' && ext !== '.gif' && ext !== '.jpeg'&& ext !== '.JPEG' && ext !== '.JPG' && ext !== '.GIF' && ext !== '.PNG' ) {
 				req.flash('error', 'Zły format zdjecia, zdjecie nie zostało zmienione.');
 			} else {
-				updatedUser.foto=req.file.filename;
+				updatedUser.foto=req.files[0].filename;
 			}
 		}
 

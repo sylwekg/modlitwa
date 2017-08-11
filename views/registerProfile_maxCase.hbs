@@ -1,0 +1,175 @@
+
+{{#if hasErrors}}
+    <div class="alert alert-danger content" id="errMsg">
+        {{#each messages}}
+            <p>{{this}}</p>
+        {{/each}}
+    </div>
+{{/if}}
+
+<form action="/users/register" method="POST" enctype="multipart/form-data">
+	<div class="card profile" style="max-width: 30rem;" >
+	  <h4 class="card-title text-center"> <strong>Rejestracja</strong> </h4><br>
+
+	  <img class="card-img-top img-circle" src="/images/avatar.jpg" alt="user" width="150" id="frame">
+	  
+	  <input type="hidden" name="foto" id="imageData64"/>
+	  
+	  <div class="card-block">
+
+	  	  <div class="card-img-top">
+	  		<input class="btn btn-outline-success inputfile" type="file" accept="image/*" name="foto" id="camera" >
+	  		{{!-- capture="camera" --}}
+	  		<label class="btn btn-outline-success justify" for="camera">Upload foto (required format 600x600)</label>
+	  	  </div>
+
+		  <div class="form-group row">
+			  <label for="name" class="col-3 col-form-label">Imie/Naz</label>
+			  <div class="col-9">
+			    <input class="form-control" type="text" placeholder="" id="name" name="name" required>
+			  </div>
+		  </div>
+
+		  <div class="form-group row">
+			  <label for="email" class="col-3 col-form-label">Email</label>
+			  <div class="col-9">
+			    <input class="form-control" type="email" placeholder="" id="email" name="email" required>
+			  </div>
+		  </div>
+
+		  <div class="form-group row">
+			  <label for="tel" class="col-3 col-form-label">Tel</label>
+			  <div class="col-9">
+			    <input class="form-control" type="tel" placeholder="" id="tel" name="tel" required>
+			  </div>
+		  </div>
+
+		  <div class="form-group row">
+			  <label for="password" class="col-3 col-form-label">Hasło</label>
+			  <div class="col-9">
+			    <input class="form-control" type="password" placeholder="" id="password" name="password" required>
+			  </div>
+		</div>
+		<div class="justify">  
+			<button type="submit" class="btn btn-outline-success ">Zarejestruj</button>
+	        <button type="button" onclick="goBack()" class="btn btn-outline-warning ">Anuluj</button>
+		</div>
+	  </div>
+
+
+	  {{!-- <img class="my-image" src="/images/avatar.jpg" /> --}}
+{{!-- 	  <div class="upload-demo" id="upload-demo"></div>
+	  <a class="btn file-btn">
+	  	<span>upload</span>
+	  	<input type="file" id="upload" value="choose a file" accept="image/*">
+	  </a>
+	  <button id="crop" type="button" class="btn btn-outline-danger">Corp</button> --}}
+
+
+
+	</div>
+</form>
+
+<script type="text/javascript">
+
+$( document ).ready(function() {
+	$('#errMsg').delay(5000).slideUp();
+
+
+// initialize cropper by providing it with a target canvas and a XY ratio (height = width * ratio)
+cropper.start(document.getElementById("testCanvas"), 1); 
+      
+function handleFileSelect() {
+  // this function will be called when the file input below is changed
+  var file = document.getElementById("fileInput").files[0];  // get a reference to the selected file
+  
+  var reader = new FileReader(); // create a file reader
+  // set an onload function to show the image in cropper once it has been loaded
+  reader.onload = function(event) {
+    var data = event.target.result; // the "data url" of the image
+    cropper.showImage(data); // hand this to cropper, it will be displayed
+  };
+  
+  // this loads the file as a data url calling the function above once done
+  reader.readAsDataURL(file); 
+}
+
+
+
+
+
+	
+
+
+
+
+	//obsługa wyboru zdjecia 
+	var camera = document.getElementById('camera');
+	var frame = document.getElementById('frame');
+
+	camera.addEventListener('change', function(e) {
+	    var file = e.target.files[0]; 
+	    // Do something with the image file.
+	    frame.src = URL.createObjectURL(file);
+	});
+
+	var $uploadCrop;
+
+	function readFile(input) {
+		if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            
+            reader.onload = function (e) {
+				$('.upload-demo').addClass('ready');
+            	$uploadCrop.croppie('bind', {
+            		url: e.target.result
+            	}).then(function(){
+            		console.log('jQuery bind complete');
+            	});
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+        else {
+	        swal("Sorry - you're browser doesn't support the FileReader API");
+	    }
+	}
+
+	$uploadCrop = $('#upload-demo').croppie({
+		viewport: {
+			width: 150,
+			height: 150,
+			type: 'circle'
+		},
+		enableExif: true,
+		boundary: {
+	        width: 200,
+	        height: 200
+    	},
+    	enableOrientation: true
+	});
+
+	$('#upload').on('change', function () { readFile(this); });
+
+	$('#crop').on('click', function (ev) {
+		//delete frame;
+		//delete frame.src;
+		$uploadCrop.croppie('result', {
+			type: 'canvas',
+			size: 'viewport'
+		}).then(function (resp) {
+			console.log(resp);
+			//popupResult({
+				frame.src=resp;  
+				document.getElementById('imageData64').value = resp;
+			//});
+		});
+	});
+
+
+
+});
+
+</script>
+
+
+

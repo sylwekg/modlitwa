@@ -1,0 +1,202 @@
+
+{{#if hasErrors}}
+    <div class="alert alert-danger content" id="errMsg">
+        {{#each messages}}
+            <p>{{this}}</p>
+        {{/each}}
+    </div>
+{{/if}}
+
+<form action="/users/register" method="POST" enctype="multipart/form-data">
+	<div class="card profile" style="max-width: 30rem;" >
+	  <h4 class="card-title text-center"> <strong>Rejestracja</strong> </h4><br>
+
+	  <img class="card-img-top img-circle" src="/images/avatar.jpg" alt="user" width="150" id="frame">
+	  
+	  {{!-- <input type="hidden" name="foto" id="imageData64"/> --}}
+	  
+	  <div class="card-block">
+
+	  	  <div class="card-img-top">
+	  		<input class="btn btn-outline-success inputfile" type="file" accept="image/*" name="foto" id="camera" >
+	  		{{!-- capture="camera" --}}
+	  		<label class="btn btn-outline-success justify" for="camera">Upload foto (required format 600x600)</label>
+	  	  </div>
+
+		  <div class="form-group row">
+			  <label for="name" class="col-3 col-form-label">Imie/Naz</label>
+			  <div class="col-9">
+			    <input class="form-control" type="text" placeholder="" id="name" name="name" required>
+			  </div>
+		  </div>
+
+		  <div class="form-group row">
+			  <label for="email" class="col-3 col-form-label">Email</label>
+			  <div class="col-9">
+			    <input class="form-control" type="email" placeholder="" id="email" name="email" required>
+			  </div>
+		  </div>
+
+		  <div class="form-group row">
+			  <label for="tel" class="col-3 col-form-label">Tel</label>
+			  <div class="col-9">
+			    <input class="form-control" type="tel" placeholder="" id="tel" name="tel" required>
+			  </div>
+		  </div>
+
+		  <div class="form-group row">
+			  <label for="password" class="col-3 col-form-label">Hasło</label>
+			  <div class="col-9">
+			    <input class="form-control" type="password" placeholder="" id="password" name="password" required>
+			  </div>
+		</div>
+		<div class="justify">  
+			<button type="submit" class="btn btn-outline-success ">Zarejestruj</button>
+	        <button type="button" onclick="goBack()" class="btn btn-outline-warning ">Anuluj</button>
+		</div>
+	  </div>
+
+
+	  {{!-- <img class="my-image" src="/images/avatar.jpg" /> --}}
+{{!-- 	  <div class="upload-demo" id="upload-demo"></div>
+	  <a class="btn file-btn">
+	  	<span>upload</span>
+	  	<input type="file" id="upload" value="choose a file" accept="image/*">
+	  </a>
+	  <button id="crop" type="button" class="btn btn-outline-danger">Corp</button> --}}
+
+{{!--     <div>
+      <img id="image1" src="/images/avatar.jpg" alt="Picture">
+    </div>
+ --}}
+{{!--     <h3>Result</h3>
+    <p>
+      <button type="button" id="button">Crop</button>
+    </p>
+
+	<a class="btn">
+		<span>upload</span>
+	    <input type="file" id="upload" value="upload file" accept="image/*">
+	</a>
+
+    <div id="result"></div> --}}
+
+
+<input type="file" name="uploadImage" id="uploadImage" />
+<div class="image_container">
+    <img id="blah" src="/images/avatar.jpg" alt="your image" />
+</div>
+
+        <div class="btn-group">
+          <button type="button" class="btn btn-primary" data-method="zoom" data-option="0.1" title="Zoom In">
+            <span class="docs-tooltip" data-toggle="tooltip" title="cropper.zoom(0.1)">
+              <span class="fa fa-search-plus"></span>
+            </span>
+          </button>
+          <button type="button" class="btn btn-primary" data-method="zoom" data-option="-0.1" title="Zoom Out">
+            <span class="docs-tooltip" data-toggle="tooltip" title="cropper.zoom(-0.1)">
+              <span class="fa fa-search-minus"></span>
+            </span>
+          </button>
+        </div>
+
+        
+<div id="cropped_result"></div>        // Cropped image to display (only if u want)
+<button id="crop_button">Crop</button> // Will trigger crop event
+
+
+
+
+	</div>
+</form>
+
+<script type="text/javascript">
+
+$( document ).ready(function() {
+	$('#errMsg').delay(5000).slideUp();
+
+
+	//obsługa wyboru zdjecia 
+	var camera = document.getElementById('camera');
+	var frame = document.getElementById('frame');
+	
+
+	camera.addEventListener('change', function(e) {
+	    	var file = e.target.files[0]; 
+		    // Do something with the image file.
+		    frame.src = URL.createObjectURL(file);
+	});
+
+	//==========================================================================
+
+	var uploadImage = document.getElementById('uploadImage');
+
+	uploadImage.addEventListener('change',  function () { readURL(this); });
+	var image = document.getElementById('blah');
+	
+	var options = {
+		aspectRatio: 1 / 1,
+          crop: function(e) {
+            console.log(e.detail.x);
+            console.log(e.detail.y);
+          }
+	}
+
+ 	var cropper = new Cropper(image, options);
+
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                $('#blah').attr('src', e.target.result)
+            };
+            reader.readAsDataURL(input.files[0]);
+            setTimeout(initCropper, 1000);
+        }
+    }
+
+    function initCropper(){
+        console.log("Came here")
+        
+        cropper.destroy();
+        cropper = new Cropper(image, options);
+
+        // On crop button clicked
+        document.getElementById('crop_button').addEventListener('click', function(){
+            var imgurl =  cropper.getCroppedCanvas().toDataURL();
+            var img = document.createElement("img");
+            img.src = imgurl;
+            document.getElementById("cropped_result").appendChild(img);
+
+            /* ---------------- SEND IMAGE TO THE SERVER-------------------------
+
+                cropper.getCroppedCanvas().toBlob(function (blob) {
+                      var formData = new FormData();
+                      formData.append('croppedImage', blob);
+                      // Use `jQuery.ajax` method
+                      $.ajax('/path/to/upload', {
+                        method: "POST",
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function () {
+                          console.log('Upload success');
+                        },
+                        error: function () {
+                          console.log('Upload error');
+                        }
+                      });
+                });
+            ----------------------------------------------------*/
+        })
+    }
+
+
+
+
+});
+
+</script>
+
+
+

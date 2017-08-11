@@ -51,7 +51,7 @@ a:active {
   border: 1px #ccc solid;	
   padding: 10px;
   border-radius: 15px;
-  min-width: 15rem;  //20rem
+  min-width: 19rem;  //20rem
 
 }
 
@@ -139,3 +139,18 @@ z-index: -1;
 .btn-group .active {
     background-color: orange;
  }
+
+/*cropper*/
+/*     .container {
+      max-width: 640px;
+      margin: 20px auto;
+    }
+
+    img {
+      max-width: 100%;
+    }
+
+    .cropper-view-box,
+    .cropper-face {
+      border-radius: 50%;
+    }*/
