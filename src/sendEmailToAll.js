@@ -8,7 +8,7 @@ module.exports = (io)=> {
 	process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 	// create reusable transporter object using the default SMTP transport
-	let transporter = nodemailer.createTransport({
+	var transporter = nodemailer.createTransport({
 	    host: 'poczta.o2.pl',
 	    port: 465,
 	    pool: true,
@@ -27,7 +27,7 @@ module.exports = (io)=> {
 	function wyslijEmail(user,usersCount,userNo) {
 		return new Promise((resolve, reject) => { 
 			// setup email data with unicode symbols
-			let mailOptions = {
+			var mailOptions = {
 			    from: '" Kółko różańcowe "  <messaging.system@o2.pl>', // sender address
 			    to: user.email, // list of receivers
 			    subject: 'Zmiana tajemnic', // Subject line
@@ -50,8 +50,8 @@ module.exports = (io)=> {
 	}
 
 	function wyslijAllEmails(users) {
-		let count=0;
-		let promises = users.map(user => {
+		var count=0;
+		var promises = users.map(user => {
 			count++;
 			//io.emit('msgSent',"wysyłanie w trakcie..."+count+" / "+users.length);
 			return wyslijEmail(user,users.length,count);

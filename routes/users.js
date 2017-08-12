@@ -187,7 +187,7 @@ module.exports = function(io) {
 		
 		Promise.all(pa).then(values => {
 			console.log("cumulative",values);
-			let i=0;
+			var i=0;
 			values.forEach((item, index)=> {
 				if(item.ok==1) i++;
 			});
@@ -276,7 +276,7 @@ module.exports = function(io) {
 					    tel: req.body.tel,
 					    tajemnica: tajemnica._id,
 					    grupa: grupa,
-					    foto: foto,
+					    foto: foto,	
 					    password: "user",
 					    joinDate: new Date().getTime()
 				  		});
