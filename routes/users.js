@@ -7,6 +7,7 @@ module.exports = function(io) {
 	var fs = require('fs');
 	var schedule = require('node-schedule');
 	var passport = require('passport');
+	var moment = require('moment');
 
 	var User = require('../models/user');
 	var Tajemnica = require('../models/tajemnica');
@@ -443,7 +444,7 @@ module.exports = function(io) {
 	/* request o zmiane tejemnic /users/zmianaTajemnic  */
 	router.get('/zmianaTajemnic', mid.requiresAdmin ,function(req, res, next) {
 		var messages = req.flash('error');
-		console.log(schedule.scheduledJobs);
+		//console.log(schedule.scheduledJobs);
 		
 		Global
 	  	.findOne({name:'default'})
@@ -454,15 +455,27 @@ module.exports = function(io) {
 	  		}
 	  		else {
 	  			console.log(doc);
+	  			//recover scheduled jobs from database if not present in scheduler
 	  			if(doc) {
 	  				if(Object.keys(schedule.scheduledJobs).length === 0 ) {
 	  					// konwersja czasu z lokalnego do UTC przed zapisaniem do bazy
 			  			var date = new Date(doc.dataZmiany);
-			  			var loc_d = date.getTimezoneOffset()*60000;
+			  			//var loc_d = date.getTimezoneOffset()*60000;
 			  			console.log('ladowanie eventu z bazy');
-						schedule.scheduleJob(Date.parse(date)+loc_d, function(){
+						schedule.scheduleJob(Date.parse(date), function(){
 						  	console.log('Wykonanie funkcji zmiany tajemnic');
-						  	//.............
+							User.zmianaTajemnic(function(error, result) {
+						  		if(error) {
+						  			console.log('Błąd w trakcie zmiany tajemnic !')
+						  			req.flash('error', ' Błąd w trakcie zmiany tajemnic !');
+						  		}
+						  		else {
+						  			console.log('Zmiana tajemnic wykonana')
+						  			req.flash('error', ' Zmiana tajemnic wykonana');
+						  			//powiadomienie mailowe o wykonaniu zmiany
+						  			sendEmailToAll(io);
+						  		}
+						  	});
 						});
 	  				}
 	  			}
@@ -473,7 +486,7 @@ module.exports = function(io) {
 
 	//aktualizacja daty zaplanowanej dla zmiany tajemnic
 	router.post('/zmianaTajemnic/update',mid.requiresAdmin, function(req, res, next) {
-		console.log("formularz przysłał",req.body);
+		console.log("formularz przysłał >>>>",req.body);
 
 		Global
 	  	.findOne({name:'default'})
@@ -485,8 +498,11 @@ module.exports = function(io) {
 	  			if(docs) 
 	  				docs.remove();
 	  			// konwersja czasu z lokalnego do UTC przed zapisaniem do bazy
-	  			var d = new Date(req.body.date);
-	  			var loc_d = d.getTimezoneOffset()*60000;
+
+	  			// var d = new Date(req.body.date);
+	  			// console.log("xxxxxxxxxxxxxxxxxxx",d.toUTCString());
+	  			// console.log("xxxxxxxxxxxxxxxxxxx offset:",d.getTimezoneOffset()/60);
+	  			var loc_d = req.body.offset*60000;
 
 	  			var newSetting = new Global({
 	  				name : "default",
@@ -519,8 +535,9 @@ module.exports = function(io) {
 					}
 
 					var date = new Date(req.body.date);
+
 					schedule.scheduleJob(Date.parse(date)+loc_d, function(){
-					  	
+					//schedule.scheduleJob(moment.utc(req.body.date).format(), function(){  	
 					  	console.log('Wykonanie funkcji zmiany tajemnic');
 
 					  	User.zmianaTajemnic(function(error, result) {

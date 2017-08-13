@@ -21,6 +21,8 @@
         </div>
       </div>
 
+      <input type="hidden" name="offset" id="timeOffset">
+
       <div class="form-group row">
         <label for="powtarzaj" class="col-4 col-form-label">Powtarzaj</label>
         <div class="col-8">
@@ -44,13 +46,14 @@
           <span class="custom-control-indicator"></span>
           <span class="custom-control-description">Powiadomienie email w dniu zmiany</span>
         </label>
-       
+      
+      <div></div> 
 
       </div>
      <br><br>
       
       <div class="justify">
-        <button type="submit" class="btn btn-outline-success">Zapisz</button>
+        <button type="submit" class="btn btn-outline-success" id="zapisz">Zapisz</button>
         <button type="button" class="btn btn-outline-danger" onclick="javascript:location.href='/users/zmianaTajemnic/now'" >Zmień teraz</button>
       </div>
         {{!-- <button type="button" onclick="javascript:location.href='/'" class="btn btn-outline-warning ">test</button> --}}
@@ -65,8 +68,20 @@
 
 $( document ).ready(function() {
   $('#errMsg').delay(5000).slideUp();
+
+
+  $('form').submit(function(evt) {
+    $('#timeOffset').val(new Date().getTimezoneOffset());
+    evt.preventDefault();
+    var url = $(this).attr("action");
+    var formData = $(this).serialize();
+    $.post(url, formData, function(response) {
+        alert("Dane wysłane");
+    }); // end post
+  }); // end submit
+
+
+
 });
-
-
 
 </script>
