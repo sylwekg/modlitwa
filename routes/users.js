@@ -7,7 +7,6 @@ module.exports = function(io) {
 	var fs = require('fs');
 	var schedule = require('node-schedule');
 	var passport = require('passport');
-	var moment = require('moment');
 
 	var User = require('../models/user');
 	var Tajemnica = require('../models/tajemnica');
@@ -536,8 +535,7 @@ module.exports = function(io) {
 
 					var date = new Date(req.body.date);
 
-					schedule.scheduleJob(Date.parse(date)+loc_d, function(){
-					//schedule.scheduleJob(moment.utc(req.body.date).format(), function(){  	
+					schedule.scheduleJob(Date.parse(date)+loc_d, function(){ 	
 					  	console.log('Wykonanie funkcji zmiany tajemnic');
 
 					  	User.zmianaTajemnic(function(error, result) {

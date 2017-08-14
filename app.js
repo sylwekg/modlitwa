@@ -79,8 +79,8 @@ app.engine('.hbs',expressHbs({
     },
     ISODate: function(inputDate) {
       //date convertion
-      var date = new Date(inputDate);
-
+      var date = new Date(inputDate);//-offset);
+      //console.log("handlebar converter date>>>",date);
       var day = date.getDate();
       var month = date.getMonth() + 1;
       var year = date.getFullYear();

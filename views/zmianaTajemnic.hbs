@@ -57,30 +57,53 @@
         <button type="button" class="btn btn-outline-danger" onclick="javascript:location.href='/users/zmianaTajemnic/now'" >Zmień teraz</button>
       </div>
         {{!-- <button type="button" onclick="javascript:location.href='/'" class="btn btn-outline-warning ">test</button> --}}
-
-
     </div>
   </div>
 </form>
-
 
 <script type="text/javascript">
 
 $( document ).ready(function() {
   $('#errMsg').delay(5000).slideUp();
 
-
+// submit by ajax to info to server about local time offset
   $('form').submit(function(evt) {
     $('#timeOffset').val(new Date().getTimezoneOffset());
     evt.preventDefault();
     var url = $(this).attr("action");
     var formData = $(this).serialize();
     $.post(url, formData, function(response) {
-        alert("Dane wysłane");
+        alert("Data zmieniona");
     }); // end post
   }); // end submit
 
+//adjustment to local time of the date received in UTC time form serwer
+  
 
+  //var receivedDate=$('#date').val();
+  // var offset=new Date().getTimezoneOffset()*60000;
+  // var date = new Date(receivedDate)-offset;
+  //console.log("handlebar converter date>>>",date);
+  // var day = new Date(date).getDate();
+  // var month = new Date(date).getMonth() + 1;
+  // var year = new Date(date).getFullYear();
+  // var hour = new Date(date).getHours();
+  // var minute = new Date(date).getMinutes();
+  // var second = "00";
+
+  // if (month < 10) month = "0" + month;
+  // if (day < 10) day = "0" + day;
+  // if (hour <10) hour = "0" +hour;
+  // if (minute <10) minute = "0" +minute;
+
+  // var today = year + "-" + month + "-" + day + "T" + hour + ":" + minute + ":" + second;
+  
+  console.log(JSON.parse('{{{json data.dataZmiany}}}'));
+  var receivedDate=JSON.parse('{{{json data.dataZmiany}}}');
+  var today = moment.utc(receivedDate).local().format("YYYY-MM-DDTHH:mm:ss");
+
+
+  $('#date').val(today);
 
 });
 
