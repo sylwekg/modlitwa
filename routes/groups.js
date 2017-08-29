@@ -33,7 +33,7 @@ router.get('/', mid.requiresOpiekun, function(req, res, next) {
   		if(err)
   			return next(err);
   		else
-    		return res.render('groups', { backButton:true, backLink:"/", messages:messages, hasErrors: messages.length>0, data: docs });  
+    		return res.render('groups', { backButton:true, backLink:"/admin", messages:messages, hasErrors: messages.length>0, data: docs });  
   	});
 });
 
@@ -55,7 +55,7 @@ router.get('/profile/:id', mid.requiresOpiekun, function(req, res, next) {
 		  		if(err)
 		  			return next(err);
 		  		else
-		    		return res.render('groupProfile', { backButton:true, backLink:"/groups", messages:messages, hasErrors: messages.length>0, groupData: group, usersData: users });  
+		    		return res.render('groupProfile', { backButton:true, backLink:"/admin/groups", messages:messages, hasErrors: messages.length>0, groupData: group, usersData: users });  
 		  	});
 		}
 	});
@@ -105,7 +105,7 @@ router.post('/add', mid.requiresAdmin, upload.single('foto'), function(req, res,
 			return next(err);
 		else {
 			req.flash('error', 'Dodano nową grupę !');
-			return res.redirect('/groups');
+			return res.redirect('/admin/groups');
 		}
 	});
 });
@@ -128,7 +128,7 @@ router.get('/edit/:id', mid.requiresAdmin, function(req, res, next) {
 		  		if(err)
 		  			return next(err);
 		  		else
-		    		return res.render('editGroupProfile', { backButton:true, backLink:"/groups/profile/"+req.params.id, backArrow: true, groupData: group, usersData: users });  
+		    		return res.render('editGroupProfile', { backButton:true, backLink:"/admin/groups/profile/"+req.params.id, backArrow: true, groupData: group, usersData: users });  
 		  	});
 		}
 	});
@@ -164,7 +164,7 @@ router.post('/edit/:id', mid.requiresAdmin, upload.single('foto'), function(req,
   				if(err) 
   					return err;
   				else
-  					return res.redirect('/groups/profile/'+req.params.id);
+  					return res.redirect('/admin/groups/profile/'+req.params.id);
     		});
   		}
   	});
@@ -182,7 +182,7 @@ router.get('/delete/:id', mid.requiresAdmin, function(req, res, next) {
 		else {
 			if(users.length>0) {
 				req.flash('error', ' Najpierw usun członków grupy !');
-    			return res.redirect('/groups/profile/'+req.params.id);
+    			return res.redirect('/admin/groups/profile/'+req.params.id);
 			} else{
 				Group
 			  	.findById(req.params.id) 
@@ -205,7 +205,7 @@ router.get('/delete/:id', mid.requiresAdmin, function(req, res, next) {
 							}
 							else {
 								req.flash('error', ' Grupa skasowana !');
-								return res.redirect('/groups');	
+								return res.redirect('/admin/groups');	
 							}
 						});
 			  		}
@@ -227,7 +227,7 @@ router.get('/addUsers/:id', mid.requiresAdmin, function(req, res, next) {
   		if(err)
   			return next(err);
   		else  		
-    		return res.render('showUsersToAdd', { backButton:true, backLink:"/groups/profile/"+req.params.id  , group:req.params.id, data: docs, messages:messages, hasErrors: messages.length>0 });  
+    		return res.render('showUsersToAdd', { backButton:true, backLink:"/admin/groups/profile/"+req.params.id  , group:req.params.id, data: docs, messages:messages, hasErrors: messages.length>0 });  
   	});
 });
 
@@ -256,7 +256,7 @@ router.post('/addUsers/:id', mid.requiresAdmin, function(req, res, next) {
 	  			req.flash('error', 'Nie dodano użytkowników!');	
 	  		else
 	  			req.flash('error', ' Dodano do grupy '+ raw.nModified+' użytkowników!');
-			return res.redirect('/groups/profile/'+req.params.id);
+			return res.redirect('/admin/groups/profile/'+req.params.id);
 		});
 	});
 });
@@ -273,7 +273,7 @@ router.get('/removeUsers/:id', mid.requiresAdmin, function(req, res, next) {
   		if(err)
   			return next(err);
   		else  		
-    		return res.render('showUsersToRemove', {backButton:true, backLink:"/groups/profile/"+req.params.id  , group:req.params.id, data: docs, messages:messages, hasErrors: messages.length>0 });  
+    		return res.render('showUsersToRemove', {backButton:true, backLink:"/admin/groups/profile/"+req.params.id  , group:req.params.id, data: docs, messages:messages, hasErrors: messages.length>0 });  
   	});
 });
 
@@ -299,7 +299,7 @@ router.post('/removeUsers/:id', mid.requiresAdmin, function(req, res, next) {
 				return next(err);
 			console.log('The raw response from Mongo was ', raw);
 	  		req.flash('error', ' Usunięto z grupy '+ raw.nModified+' użytkowników!');
-			return res.redirect('/groups/profile/'+req.params.id);
+			return res.redirect('/admin/groups/profile/'+req.params.id);
 		});
 	});
 });

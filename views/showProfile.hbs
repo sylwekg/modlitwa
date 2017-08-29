@@ -18,13 +18,13 @@
       <p class="card-text"><strong>Tel: </strong> <a href="tel:{{data.tel}}">{{data.tel}}</a> </p>
       <p class="card-text"><strong>Rola: </strong> <i id="rola">{{data.role}}</i> </p>
       <p class="card-text"><strong>Tajemnica: </strong>{{data.tajemnica.name}}</p>
-      <p class="card-text"><strong>Grupa: </strong><a href="/groups/profile/{{data.grupa._id}}"> {{data.grupa.name}}</a></p>
+      <p class="card-text"><strong>Grupa: </strong><a href="/admin/groups/profile/{{data.grupa._id}}"> {{data.grupa.name}}</a></p>
       <p class="card-text"><strong>Join date: </strong><i id="d1">{{data.joinDate}}</i></p>
       <p class="card-text"><strong>Last update: </strong><i id="d2">{{data.updateDate}}</i></p>
 
       <div class="justify">
-        <button type="button" class="btn btn-outline-primary" onclick="javascript:location.href='/users/edit/{{data._id}}'">Edit</button>
-        <button type="button" class="btn btn-outline-danger" onclick="javascript:location.href='/users/delete/{{data._id}}'">Delete</button>
+        <button type="button" class="btn btn-outline-primary" onclick="javascript:location.href='/admin/users/edit/{{data._id}}'">Edit</button>
+        <button type="button" class="btn btn-outline-danger" onclick="javascript:location.href='/admin/users/delete/{{data._id}}'">Delete</button>
       </div>
 
     </div>

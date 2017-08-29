@@ -6,7 +6,7 @@
     </div>
 {{/if}}
 
-<form action="/users/priv" method="POST"> 
+<form action="/admin/users/priv" method="POST"> 
 	<div class="container-fluid content">
 	    <div id='list' class="row featurette justify">
 	        {{# each data}}
@@ -17,7 +17,7 @@
 			    	</div>
 
 			    	<div class="col-6 flex-center-vertically ">
-			            <a href="/users/profile/{{_id}}"><h5> <strong>  {{name}}</strong> </h5></a>
+			            <a href="/admin/users/profile/{{_id}}"><h5> <strong>  {{name}}</strong> </h5></a>
 			            <h6 id="roleTag"><i class="fa fa-lock" aria-hidden="true"></i> {{role}}</h6>
 			            <input type="hidden"  id="{{_id}}" >
 			  	    </div>

@@ -42,7 +42,7 @@ module.exports = function(io) {
 	  		if(err)
 	  			return next(err);
 	  		else  		
-	    		return res.render('users', { backButton:true, backLink:"/", data: docs, messages:messages, hasErrors: messages.length>0 });  
+	    		return res.render('users', { backButton:true, backLink:"/admin", data: docs, messages:messages, hasErrors: messages.length>0 });  
 	  });
 	});
 
@@ -61,13 +61,13 @@ module.exports = function(io) {
 	                var err = new Error('Wrong email or password - test');
 	                err.status = 401;
 	                req.flash('error', 'Wrong email or password');
-	                return res.redirect('/users/login');
+	                return res.redirect('/admin/users/login');
 	                
 	            } else {
 	                req.session.userId = user._id;
 	                req.session.userName = user.name;
-	           //========= odnosnik do profilu obecnie zalogowanego uzytkownika:
-	                return res.redirect('/users/profile/'+req.session.userId);   
+	           //========= odnosnik do profilu obecnie zalogowanego uzytkownika://users/profile/'+req.session.userId);
+	                return res.redirect('/admin');   
 	            }
 	        });
 	    } else {
@@ -84,7 +84,7 @@ module.exports = function(io) {
 	            if(err)
 	                return next(err);
 	            else
-	                return res.redirect('/');
+	                return res.redirect('/admin/');
 	        });
 	    }
 	});
@@ -139,13 +139,13 @@ module.exports = function(io) {
 	                    req.flash('error', 'Podany e-mail juz istnieje. ');
 	                else
 	                    req.flash('error', 'Błąd bazy danych. Spróbuj ponownie ');
-	                return res.redirect('/users/register');
+	                return res.redirect('/admin/users/register');
   				}
   				else {
   					res.status(201);
   					req.session.userId = newUser._id;
   					req.session.userName = newUser.name;	
-					return res.redirect('/users/profile/'+req.session.userId);
+					return res.redirect('/admin/users/profile/'+req.session.userId);
   				}
   			});
 		}
@@ -153,7 +153,7 @@ module.exports = function(io) {
 			var err = new Error('All fields required.');
 	        err.status = 400;
 	        req.flash('error', 'All fields required');
-	        return res.redirect('/users/register');
+	        return res.redirect('/admin/users/register');
 		}
 	});
 
@@ -166,7 +166,7 @@ module.exports = function(io) {
 			if(err)
 		  		return next(err);
 		  	else  		
-		    	return res.render('priv', { backButton:true, backLink:"/", data: docs, messages:messages, hasErrors: messages.length>0 });  
+		    	return res.render('priv', { backButton:true, backLink:"/admin", data: docs, messages:messages, hasErrors: messages.length>0 });  
 		});
 	});
 
@@ -197,7 +197,7 @@ module.exports = function(io) {
   			console.log(reason);
   			req.flash('error', reason);
 		});
-		return res.redirect('/users/priv');
+		return res.redirect('/admin/users/priv');
 	});
 
 
@@ -225,7 +225,7 @@ module.exports = function(io) {
 	  		if(err)
 	  			return next(err);
 	  		else
-	    		return res.render('showProfile', { backButton:true, backLink:"/users" ,data: docs , messages:messages, hasErrors: messages.length>0});  
+	    		return res.render('showProfile', { backButton:true, backLink:"/admin/users" ,data: docs , messages:messages, hasErrors: messages.length>0});  
 		});
 	});
 
@@ -290,10 +290,10 @@ module.exports = function(io) {
 			                    console.log(err);
 			                }
 
-			                return res.redirect('/users/add');
+			                return res.redirect('/admin/users/add');
 		  				}
 		  				res.status(201);
-						return res.redirect('/users/profile/'+newUser._id);
+						return res.redirect('/admin/users/profile/'+newUser._id);
 		  			});
 		  		}	
 		 	});
@@ -302,7 +302,7 @@ module.exports = function(io) {
 			var err = new Error('All fields required.');
 	        err.status = 400;
 	        req.flash('error', 'All fields required');
-	        return res.redirect('/users/add');
+	        return res.redirect('/admin/users/add');
 		}
 	});
 
@@ -324,7 +324,7 @@ module.exports = function(io) {
 			  			return next(err);
 			  		else {
 			  			//grupy.unshift("bez grupy");
-			  			return res.render('addProfile', { backButton:true, backLink:"/users" ,'tajemnice': tajemnice, 'grupy': grupy, 
+			  			return res.render('addProfile', { backButton:true, backLink:"/admin/users" ,'tajemnice': tajemnice, 'grupy': grupy, 
 			  				messages:messages, hasErrors: messages.length>0 });  
 			  		}
 			  	});
@@ -355,7 +355,7 @@ module.exports = function(io) {
 					}
 					else {
 						req.flash('error', ' Profil skasowany !');
-						return res.redirect('/');	
+						return res.redirect('/admin/');	
 					}
 				});
 	  		}
@@ -388,7 +388,7 @@ module.exports = function(io) {
 					  			return next(err);
 					  		else {
 					  			//grupy.unshift("bez grupy");
-					  			return res.render('editProfile', { backButton:true, backLink:"/users/profile/"+req.params.id , data: docs, 'tajemnice': tajemnice, 'grupy': grupy});  
+					  			return res.render('editProfile', { backButton:true, backLink:"/admin/users/profile/"+req.params.id , data: docs, 'tajemnice': tajemnice, 'grupy': grupy});  
 					  		}
 					  	});
 			  		}	
@@ -434,7 +434,7 @@ module.exports = function(io) {
 			if (err) 
 				return next(err);
 			console.log('The raw response from Mongo was ', raw);
-			return res.redirect('/users/profile/'+req.params.id);
+			return res.redirect('/admin/users/profile/'+req.params.id);
 		}); 
 	});
 
@@ -478,7 +478,7 @@ module.exports = function(io) {
 						});
 	  				}
 	  			}
-	  			return res.render('zmianaTajemnic', { backButton:true, backLink:"/", data: doc, messages:messages, hasErrors: messages.length>0 });
+	  			return res.render('zmianaTajemnic', { backButton:true, backLink:"/admin", data: doc, messages:messages, hasErrors: messages.length>0 });
 	  		} 			  
 		}); 
 	});
@@ -517,7 +517,7 @@ module.exports = function(io) {
 					else{
 						console.log('do bazy zapisano: ',item);
 						req.flash('error', ' Zapisano zmiany!');
-						return res.redirect('/users/zmianaTajemnic');
+						return res.redirect('/admin/users/zmianaTajemnic');
 					}
 				});
 
@@ -569,13 +569,13 @@ module.exports = function(io) {
 	  		if(error) {
 	  			console.log('Błąd w trakcie zmiany tajemnic !')
 	  			req.flash('error', ' Błąd w trakcie zmiany tajemnic !');
-	  			return res.redirect('/');
+	  			return res.redirect('/admin/');
 	  		}
 	  		else {
 	  			console.log('Zmiana tajemnic wykonana')
 	  			req.flash('error', ' Zmiana tajemnic wykonana');
 	  			sendEmailToAll(io);
-	  			return res.redirect('/');
+	  			return res.redirect('/admin/');
 	  		}
 	  	});
 	});
@@ -586,7 +586,7 @@ module.exports = function(io) {
 		//load data
 		//.........
 
-		return res.render('mailNotification', { backButton:true, backLink:"/", messages:messages, hasErrors: messages.length>0 });
+		return res.render('mailNotification', { backButton:true, backLink:"/admin", messages:messages, hasErrors: messages.length>0 });
 
 	});
 
@@ -597,7 +597,7 @@ module.exports = function(io) {
 
 		sendEmailToAll(io);
 
-	return res.redirect('/users/mailNotification');	
+	return res.redirect('/admin/users/mailNotification');	
 	});
 
 

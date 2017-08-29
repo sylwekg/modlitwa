@@ -1,6 +1,6 @@
 
 <div class="container-fluid"> 
-	 <form action="/groups/edit/{{groupData._id}}" method="POST" enctype="multipart/form-data" >   
+	 <form action="/admin/groups/edit/{{groupData._id}}" method="POST" enctype="multipart/form-data" >   
 	    <div class="row featurette justify">
 			<div class="card profile content" style="max-width: 30rem; min-width: 18rem;" >
 			    <img class="card-img-top img-circle" src="/images/{{groupData.foto}}" alt="user" width="150" id="frame">
@@ -40,7 +40,7 @@
 				        
 				        <button type="button" onclick="goBack()" class="btn btn-outline-warning ">Cancel</button>
 				        
-				        <a href="/groups/delete/{{groupData._id}}">
+				        <a href="/admin/groups/delete/{{groupData._id}}">
 			        		<button type="button" class="btn btn-outline-danger ">Delete</button>
 			        	</a>
 

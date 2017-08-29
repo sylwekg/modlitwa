@@ -11,25 +11,6 @@ router.get('/', function(req, res, next) {
 });
 
 
-//import danych z pliku (wykonac na początku na swieżej bazie)
-router.get('/seeder/tajemnice', function(req, res, next) {
-	
-	fs.readFile('./seeders/tajemnice.json',  'utf8', (err, data) => {
-	    if (err) 
-	    	return next(err);
-	  	tajemnice=JSON.parse(data);
-		Tajemnica.insertMany(tajemnice, function(err, docs) {
-		    if (err) {
-		    	return next(err);
-		    	// req.flash('error', err);
-		    	// return res.redirect('/');
-		    }
-		    console.log('imported '+docs.length+' docs');
-		    req.flash('error', 'imported '+docs.length+' docs');
-		    return res.redirect('/');
-		});	  	
-	});
-});
 
 
 module.exports = router;

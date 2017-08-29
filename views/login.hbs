@@ -11,23 +11,28 @@
 
 <div class="card profile content" style="max-width: 30rem;" >
     <div class="card-block">
-        <form class="form-signin" method="POST" action="/users/login">
+        <form class="form-signin" method="POST" action="/admin/users/login">
             <h2 class="card-title text-center">User login</h2>
+            <br>
             {{!-- <label for="inputEmail" class="sr-only">Email address</label> --}}
             <input type="email" name="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
-
+            <br>
             {{!-- <label for="inputPassword" class="sr-only">Password</label> --}}
             <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required>
 
             <div class="checkbox">
                 <label>
-                    <input type="checkbox" value="remember-me"> Zapamietaj mnie
+                    <input type="checkbox" value="remember-me"> Remember me
                 </label>
             </div>
+            <br>
+            <button class="btn  btn-outline-primary btn-block" type="submit">Login</button>
+{{!-- class="d-block img-fluid" --}}
+            <a href="#" class="justify"><img  src="/images/fbLoginButton.png" alt="Login with Facebook" height="120"></a>
+{{!-- 
+            <a href="/admin/users/login/facebook"><img class="d-block img-fluid " src="/images/fbLoginButton.png" alt="Login with Facebook"></a> --}}
 
-            <button class="btn btn-lg btn-success btn-block" type="submit">Zaloguj</button>
-
-            <a href="/users/login/facebook"><img class="d-block img-fluid " src="/images/fbLoginButton.png" alt="Login with Facebook"></a>
+            <br><br><br>
         </form>
     </div>
 </div>

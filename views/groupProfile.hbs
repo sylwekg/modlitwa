@@ -19,15 +19,15 @@
 
 
 			    <h4 class="card-title text-center">{{groupData.name}}</h4>
-			    <p class="card-text"><strong>Opiekun: </strong><a href="/users/profile/{{groupData.opiekun._id}}">{{groupData.opiekun.name}}</a></p>
+			    <p class="card-text"><strong>Opiekun: </strong><a href="/admin/users/profile/{{groupData.opiekun._id}}">{{groupData.opiekun.name}}</a></p>
 			    <p class="card-text"><strong>Last update: </strong><i id="d2">{{groupData.updateDate}}</i></p>
 			    <div class="justify">
 			    
-			    	<a href="/groups/edit/{{groupData._id}}">
+			    	<a href="/admin/groups/edit/{{groupData._id}}">
 			        <button type="button" class="btn btn-outline-primary ">Edit</button>
 			        </a>
 
-			        <a href="/">
+			        <a href="/admin/">
 			        <button type="button" class="btn btn-outline-danger ">Send e-mail</button>
 			        </a>
 
@@ -41,7 +41,7 @@
 	    {{# each usersData}}
 
 	   	<div class=" col-md-6 col-lg-3 col-xlg-3 item">
-	   		<a href="/users/profile/{{_id}}">
+	   		<a href="/admin/users/profile/{{_id}}">
 	       		<div class="row">
 			        <div class="col-2 flex-center-vertically ">
 			        	<img class=" img-circle" src="/images/{{foto}}" alt="user" width="50">
@@ -62,12 +62,12 @@
 </div>
 
 <div class=" fixed-bottom justify">
-	<a href="/groups/addUsers/{{groupData._id}}">
+	<a href="/admin/groups/addUsers/{{groupData._id}}">
 		<div class="plus-button justify">
 			<h1><i class="fa fa-plus-circle" aria-hidden="true"></i></h1>
 		</div>
 	</a>
-	<a href="/groups/removeUsers/{{groupData._id}}">
+	<a href="/admin/groups/removeUsers/{{groupData._id}}">
 		<div class="minus-button justify">
 			<h1><i class="fa fa-minus-circle" aria-hidden="true"></i></h1>
 		</div>

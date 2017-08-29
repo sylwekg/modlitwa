@@ -7,7 +7,7 @@
     </div>
 {{/if}}
 
-<form action="/users/zmianaTajemnic/update" method="POST" >
+<form action="/admin/users/zmianaTajemnic/update" method="POST" >
   <div class="card profile" style="max-width: 30rem;" >
     
     <div class="card-block">
@@ -54,7 +54,7 @@
       
       <div class="justify">
         <button type="submit" class="btn btn-outline-success" id="zapisz">Zapisz</button>
-        <button type="button" class="btn btn-outline-danger" onclick="javascript:location.href='/users/zmianaTajemnic/now'" >Zmień teraz</button>
+        <button type="button" class="btn btn-outline-danger" onclick="javascript:location.href='/admin/users/zmianaTajemnic/now'" >Zmień teraz</button>
       </div>
         {{!-- <button type="button" onclick="javascript:location.href='/'" class="btn btn-outline-warning ">test</button> --}}
     </div>
@@ -98,8 +98,8 @@ $( document ).ready(function() {
 
   // var today = year + "-" + month + "-" + day + "T" + hour + ":" + minute + ":" + second;
   
-  console.log(JSON.parse('{{{json data.dataZmiany}}}'));
   var receivedDate=JSON.parse('{{{json data.dataZmiany}}}');
+  console.log(receivedDate);
   var today = moment.utc(receivedDate).local().format("YYYY-MM-DDTHH:mm:ss");
 
 

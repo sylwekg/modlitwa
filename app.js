@@ -21,12 +21,23 @@ var io           = socket_io();
 app.io           = io;
 
 var index = require('./routes/index');
+var admin = require('./routes/admin');
 var users = require('./routes/users')(io);
 var groups = require('./routes/groups');
 
 //DB start
-mongoose.connect('localhost:27017/modlitwapomaga');
-var db = mongoose.connection;
+var db;
+if (process.env.NODE_ENV == 'test') {
+    console.log('connecting to modlitwapomagaTest DB');
+    mongoose.connect('localhost:27017/modlitwapomagaTest');
+    db = mongoose.connection;
+}
+else {
+    console.log('connecting to modlitwapomaga DB');
+    mongoose.connect('localhost:27017/modlitwapomaga');
+    db = mongoose.connection; 
+}
+
 
 //on DB error
 db.on('error',console.error.bind(console,'connection error:'));
@@ -51,7 +62,7 @@ app.use(function (req, res, next) {
     if(req.session.userId){
         res.locals.currentUser = req.session.userId;
         res.locals.userName=req.session.userName;
-        console.log('username :',res.locals.userName);
+        //console.log('username :',res.locals.userName);
     }
     next();
 });
@@ -106,7 +117,10 @@ app.set('view engine', '.hbs');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('dev'));
+
+if (process.env.NODE_ENV !== 'test')
+  app.use(logger('dev'));
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -156,22 +170,23 @@ app.use(passport.session());
 //make user ID available in templates/views
 app.use(function (req, res, next) {
 
-    console.log('Diag session:',req.session);
-    console.log('Diag user:',req.user);
+    //console.log('Diag session:',req.session);
+    //console.log('Diag user:',req.user);
     //fb login
     if(req.user){
         res.locals.currentUser = req.user._id;
         res.locals.userName=req.user.name;
-        console.log('username :',res.locals.userName);
+        //console.log('username :',res.locals.userName);
     }
     next();
 });
 
 
 //routing
-app.use('/', index);
-app.use('/users', users);
-app.use('/groups', groups);
+app.use('/',index);
+app.use('/admin', admin);
+app.use('/admin/users', users);
+app.use('/admin/groups', groups);
 
 //socket.io connection
 io.sockets.on('connection', (socket) => {
