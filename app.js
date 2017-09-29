@@ -12,7 +12,7 @@ var session = require('express-session');
 var MongoStore = require('connect-mongo')(session);
 var passport = require('passport');
 var FacebookStrategy = require('passport-facebook').Strategy;
-
+var cors = require('cors');
 const dotenv = require('dotenv').config();
 
 var app = express();
@@ -24,6 +24,7 @@ var index = require('./routes/index');
 var admin = require('./routes/admin');
 var users = require('./routes/users')(io);
 var groups = require('./routes/groups');
+var api = require('./routes/api');
 
 //DB start
 var db;
@@ -125,7 +126,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
+app.use(cors());
 
 // fb authorization
 passport.use(new FacebookStrategy({
@@ -141,7 +142,7 @@ passport.use(new FacebookStrategy({
             function (err, user) {
             if (err) {
                 return cb(err);
-            }
+            } 
             if (!user) {
                 return cb(null, false, { message: 'Incorrect user.' });
             }
@@ -187,6 +188,7 @@ app.use('/',index);
 app.use('/admin', admin);
 app.use('/admin/users', users);
 app.use('/admin/groups', groups);
+app.use('/api',api);
 
 //socket.io connection
 io.sockets.on('connection', (socket) => {
@@ -203,15 +205,24 @@ app.use(function(req, res, next) {
   next(err);
 });
 
+
 // error handler
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+  console.log("ERR:",err);
+  if(err.status===401) {
+    res.status(401).send({ msg: err.message})
+  } else {
+          // render the error page
+      res.status(err.status || 500);
+      res.render('error');
+  }
+
 });
+
+
 
 module.exports = app;

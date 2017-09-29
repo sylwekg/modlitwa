@@ -130,6 +130,7 @@ z-index: -1;
     }
 
 
+
 #errMsg {
   /*position: absolute;*/
   margin-top: 60px;
@@ -139,21 +140,6 @@ z-index: -1;
 .btn-group .active {
     background-color: orange;
  }
-
-/*cropper*/
-/*     .container {
-      max-width: 640px;
-      margin: 20px auto;
-    }
-
-    img {
-      max-width: 100%;
-    }
-
-    .cropper-view-box,
-    .cropper-face {
-      border-radius: 50%;
-    }*/
 
 
 .bg { 
@@ -179,7 +165,7 @@ z-index: -1;
 }
 
 .hero-text {
-    text-align: center;
+    text-align: left;
     position: absolute;
     top: 20%;
     left: 20%;

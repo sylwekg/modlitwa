@@ -64,6 +64,8 @@ var userSchema = new mongoose.Schema({
 //authentication
 userSchema.statics.authenticate = function (email, password, callback) {
     User.findOne({ email: email})
+        .populate('tajemnica')
+        .populate('grupa')
         .exec(function (error, user) {
             if(error)
                 return callback(error);
