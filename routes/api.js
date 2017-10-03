@@ -11,6 +11,21 @@ var User = require('../models/user'),
 var Tajemnica = require('../models/tajemnica');
 var Group = require('../models/group');
 
+var path = require('path');
+var multer  = require('multer');
+var storage = multer.diskStorage({
+  destination: function(req, file, callback) {
+    callback(null, 'public/images/')
+  },
+  filename: function(req, file, callback) {
+    console.log(file)
+    callback(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
+  }
+});
+
+var upload = multer({ storage: storage });
+
+
 
 config = {
   "secret": "szukajcie a znajdziecie",
@@ -54,15 +69,55 @@ router.get('/protected/users/:id', function(req, res) {
     .populate('grupa')
     .exec( function(err, docs) {
       if(err)
-        return res.status(400).send({ message:err.message});
+        return res.status(400).send({ message:err.message });
       else
         return res.status(201).send({ user: docs });
   });
 });
 
+// api/protected/getProfileData
+router.post('/protected/users/edit/:id', upload.any(), function(req, res) {
+    console.log(req.body);
+    console.log(req.file);
 
-// protected/EditProfileData
-router.get('/protected/EditProfileData', function(req, res) {
+    if(req.body.foto){
+      var imageBuffer = utils.decodeBase64Image(req.body.foto);
+      //console.log(imageBuffer);
+      fs.writeFile(req.files[0].path, imageBuffer.data, function(err) { 
+        if(err)
+          return(err);
+        console.log('doc saved succesfuly');
+        //var err = new Error('All fields required.'); 
+      });
+    }
+
+    var updatedUser = {
+        name : req.body.name, 
+          email : req.body.email, 
+          tel : req.body.tel,
+        updateDate: new Date().getTime(),
+      };
+
+    if(req.files[0]) {
+      var ext = path.extname(req.files[0].originalname)
+      if (ext !== '.png' && ext !== '.jpg' && ext !== '.gif' && ext !== '.jpeg'&& ext !== '.JPEG' && ext !== '.JPG' && ext !== '.GIF' && ext !== '.PNG' ) {
+        req.flash('error', 'Zły format zdjecia, zdjecie nie zostało zmienione.');
+      } else {
+        updatedUser.foto=req.files[0].filename;
+      }
+    }
+
+    User
+      .update({ _id  : req.params.id }, updatedUser, function (err, raw) {
+      if (err) 
+        return res.status(400).send({ message:err.message});
+      console.log('The raw response from Mongo was ', raw);
+      return res.status(201).send({ resp:raw  });
+    }); 
+});
+
+// api/protected/getProfileData
+router.get('/protected/getProfileData', function(req, res) {
   Tajemnica
     .find()
     .sort({number:'asc'})
