@@ -586,7 +586,8 @@ module.exports = function(io) {
 		//load data
 		//.........
 
-		return res.render('mailNotification', { backButton:true, backLink:"/admin", messages:messages, hasErrors: messages.length>0 });
+		return res.render('mailNotification', 
+			{ backButton:true, backLink:"/admin", messages:messages, hasErrors: messages.length>0 });
 
 	});
 
@@ -600,7 +601,94 @@ module.exports = function(io) {
 	return res.redirect('/admin/users/mailNotification');	
 	});
 
+//======================= WYSYLANIE POWIADOMIEN WEWNATRZ APLIKACJI DO POJEDYNCZYCH OSOB ===================
 
+	router.get('/msgNotification', mid.requiresOpiekun ,function(req, res, next) {
+		var messages = req.flash('error');
+		User
+		  	.find()
+		  	.populate('grupa')
+		  	.exec( function(err, users) {
+		  		if(err)
+		  			return next(err);
+		  		else  {
+				  	Group
+				  	.find()
+				  	.populate('opiekun')
+				  	.exec( function(err, groups) {
+				  		if(err)
+				  			return next(err);
+				  		else
+				    		return res.render('msgNotification', 
+				    			{ 	backButton: true, 
+				    				backLink: "/admin", 
+				    				users: users, 
+				    				groups: groups,
+				    				messages:messages, 
+				    				hasErrors: messages.length>0
+				    			}); 
+				  	});
+		  		}		
+		});
+	});
+
+	// admin/users/messages
+	router.post('/messages', mid.requiresOpiekun, function(req, res, next) {
+		console.log(req.body);
+
+		if(req.body.content.length < 6) {
+			err = new Error("wiadomość za krótka (min. 6 znaków)");
+			//err.message="wiadomość za krótka (min. 6 znaków)";
+			console.log(err);
+			return res.status(400).send({ message:err.message});
+		}
+
+		var message = {
+				from: req.body.from,
+		        date: new Date().getTime(),
+		        content: req.body.content,
+		        read: false,
+			};
+
+		if(req.body.kto==="User") {
+			User
+		  	.update({ _id  : req.body.user }, { $push: { messages: message} }, function (err, raw) {
+				if (err) {
+					return res.status(400).send({ message:err.message});
+				} else {
+					console.log('The raw response from Mongo was ', raw);
+					return res.status(201).send({ message:raw });
+				}
+			}); 
+		}
+		if(req.body.kto==="Grupa") {
+			User
+		  	.update({ grupa  : req.body.grupa }, { $push: { messages: message} }, { multi: true }, function (err, raw) {
+				if (err) {
+					return res.status(400).send({ message:err.message});
+				} else {
+					console.log('The raw response from Mongo was ', raw);
+					return res.status(201).send({ message:raw });
+				}
+			}); 
+		}
+		if(req.body.kto==="Wszyscy") {
+			User
+		  	.update({ }, { $push: { messages: message} }, { multi: true }, function (err, raw) {
+				if (err) {
+					return res.status(400).send({ message:err.message});
+				} else {
+					console.log('The raw response from Mongo was ', raw);
+					return res.status(201).send({ message:raw });
+				}
+			}); 
+		}
+
+
+	});
+
+//=================================================================================================
+ 	
  	return router;
 }
 

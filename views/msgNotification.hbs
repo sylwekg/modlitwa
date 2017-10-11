@@ -1,0 +1,98 @@
+{{#if hasErrors}}
+    <div class="alert alert-danger content" id="errMsg">
+        {{#each messages}}
+            <p>{{this}}</p>
+        {{/each}}
+    </div>
+{{/if}}
+
+
+  <div class="card profile" style="max-width: 30rem;" >
+    <div class="card-block">
+      <h4 class="card-title text-center"> <strong>Powiadomienia msg </strong> </h4>
+      <div class="alert alert-info content" style="display: none;" id="response">
+          <p class="response"></p>
+      </div>
+
+      <form id="msgForm" action="/" method="POST" >
+        <div class="form-group">
+          <input type="hidden" name="from" id="from" value={{currentUser}}>
+          <label for="user">Adresat:</label>
+          <div class="row">
+            <div class="col-5">
+              <select class="form-control form-control-sm" id="kto" name="kto">
+                <option>User</option>
+                <option>Grupa</option>              
+                <option>Wszyscy</option>
+              </select>
+            </div>
+            <div class="col" id="divUser"  >
+              <select class="form-control form-control-sm" id="user" name="user">
+                {{# each users}}
+                  <option value={{_id}}>{{name}}</option>
+                {{/each}}
+              </select>
+            </div>
+            <div class="col" id="divGrupa" style="display: none;">
+              <select class="form-control form-control-sm" id="grupa" name="grupa" >
+                {{# each groups}}
+                  <option value={{_id}}>{{name}}</option>
+                {{/each}}
+              </select>
+            </div>
+          </div>
+        </div>
+        <label for="content">Wiadomość:</label>
+        <textarea class="form-control" id="content" name="content" rows="3"></textarea>
+        <br>
+        <div class="justify">
+          <button type="submit" class="btn btn-outline-danger">Wyslij wiadomość</button>
+          <input type="button" class="btn btn-outline-primary" value="Nowa" style="margin-left: 15px;" onclick="location.reload()">
+        </div>
+      </form>
+    </div>
+  </div>
+
+<script type="text/javascript">
+
+$( document ).ready(function() {
+  $('#errMsg').delay(5000).slideUp();
+  $( ".response" ).html("Status wysyłania wiadomości:");
+
+  //select field show/hide
+  $("#kto").change(function( event){
+    //console.log('wybrano:',event.target.value);
+    var wybor=event.target.value;
+    if(wybor==='Grupa') {
+      $("#divUser").hide();
+      $("#divGrupa").show();
+    }
+    if(wybor==='User') {
+      $("#divUser").show();
+      $("#divGrupa").hide();
+    }
+    if(wybor==='Wszyscy') {
+      $("#divUser").hide();
+      $("#divGrupa").hide();
+    }
+});
+
+
+  // form submission with feedback display
+  $( "#msgForm" ).submit(function( event ) {
+    event.preventDefault();
+    $.post("/admin/users/messages", $("#msgForm").serialize())
+    .done( data => {
+      $( ".response" ).html("Wyslano wiadomosc do "+data.message.nModified+" osób");
+      $( "#response" ).css('background-color', 'green').show();
+      //console.log('done rep:',data);
+    })
+    .fail( data => {
+      $( ".response" ).html(data.responseJSON.message);
+      $( "#response" ).css('background-color', '#d66161').show();
+      //console.log('fail rep:',data);
+    }) 
+  });
+});
+
+</script>

@@ -58,6 +58,12 @@ var userSchema = new mongoose.Schema({
         type: String,
         default: "aplikant"
     },
+    messages: [{
+        from: Schema.Types.ObjectId,
+        date: Date,
+        content: String,
+        read: false,
+    }]
 });
 
 

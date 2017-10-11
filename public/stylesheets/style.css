@@ -172,3 +172,7 @@ z-index: -1;
     transform: translate(-50%, -50%);
     color: white;
 }
+
+.response {
+  color: white;
+}
