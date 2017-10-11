@@ -75,7 +75,7 @@ router.get('/protected/users/:id', function(req, res) {
   });
 });
 
-// api/protected/getProfileData
+// api/protected/users/edit/:id
 router.post('/protected/users/edit/:id', upload.any(), function(req, res) {
     console.log(req.body);
     console.log(req.file);
@@ -109,8 +109,12 @@ router.post('/protected/users/edit/:id', upload.any(), function(req, res) {
 
     User
       .update({ _id  : req.params.id }, updatedUser, function (err, raw) {
-      if (err) 
-        return res.status(400).send({ message:err.message});
+      if (err) {
+        if(err.message.startsWith("E11000"))
+          return res.status(400).send({ message:'Provided e-mail already exist. '});
+        else
+          return res.status(400).send({ message:'DB error. Try again. '});
+      }
       console.log('The raw response from Mongo was ', raw);
       return res.status(201).send({ resp:raw  });
     }); 
@@ -144,6 +148,30 @@ router.get('/protected/getProfileData', function(req, res) {
   });
 });
 
+//get group profile  /api/protected/groups/:id
+router.get('/protected/groups/:id', function(req, res) {
+  User
+    .find({'grupa': req.params.id })
+    .populate('tajemnica')
+    .exec( function(err, users) {
+    if(err)
+      return res.status(400).send({ message:err.message });
+    else {
+        Group
+        .findById(req.params.id) 
+        .populate('opiekun')
+        .exec( function(err, group) {
+          if(err)
+            return res.status(400).send({ message:err.message });
+          else
+            return res.status(201).send({ users: users, group: group  });
+        });
+    }
+  });
+});
+
+
+
 
 // routes /api - NOT PROTECTED
 
@@ -151,7 +179,7 @@ router.get('/avatars/:id', function(req, res) {
     var filePath = path.join(__dirname, '../public/images/'+req.params.id);
     return res.sendFile(filePath,function (err) {
         if (err) {
-          console.log(err);
+          console.log(err.message);
           return res.status(400).send({message:"Avatar image not available"});
         } 
     }); 
