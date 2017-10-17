@@ -201,6 +201,37 @@ router.post('/protected/messages/delete', function(req, res) {
   });
 });
 
+// SET READ MESSAGE: api/protected/messages
+router.post('/protected/messages/setRead', function(req, res) {
+  User
+  .findById(req.body.userId)
+  .exec( function (err, user) {
+    if(err)
+      return res.status(400).send({ message:err.message });
+    else {
+      //find and remove record from table
+      user.messages.forEach( (message, index) => {
+        if(message._id == req.body.msgId) {
+          user.messages[index].read=true;
+          let updatedUser = { messages : user.messages };
+
+          User
+          .update({ _id  : req.body.userId }, updatedUser, function (err, raw) {
+            if (err) {
+              if(err.message.startsWith("E11000"))
+                return res.status(400).send({ message:'Provided e-mail already exist. '});
+              else
+                return res.status(400).send({ message:'DB error. Try again. '});
+            }
+            console.log('The raw response from Mongo was ', raw);
+            return res.status(201).send({ resp:raw  });
+          }); 
+        }
+      }); 
+    }
+  });
+});
+
 
 // routes /api - NOT PROTECTED
 
