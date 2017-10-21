@@ -11,8 +11,10 @@ var User = require('../models/user'),
 var Tajemnica = require('../models/tajemnica');
 var Group = require('../models/group');
 
+var utils = require('../src/utils');
 var path = require('path');
 var multer  = require('multer');
+
 var storage = multer.diskStorage({
   destination: function(req, file, callback) {
     callback(null, 'public/images/')
@@ -24,7 +26,6 @@ var storage = multer.diskStorage({
 });
 
 var upload = multer({ storage: storage });
-
 
 
 config = {
@@ -80,17 +81,6 @@ router.post('/protected/users/edit/:id', upload.any(), function(req, res) {
     console.log(req.body);
     console.log(req.file);
 
-    if(req.body.foto){
-      var imageBuffer = utils.decodeBase64Image(req.body.foto);
-      //console.log(imageBuffer);
-      fs.writeFile(req.files[0].path, imageBuffer.data, function(err) { 
-        if(err)
-          return(err);
-        console.log('doc saved succesfuly');
-        //var err = new Error('All fields required.'); 
-      });
-    }
-
     var updatedUser = {
         name : req.body.name, 
         email : req.body.email, 
@@ -101,8 +91,16 @@ router.post('/protected/users/edit/:id', upload.any(), function(req, res) {
     if(req.files[0]) {
       var ext = path.extname(req.files[0].originalname)
       if (ext !== '.png' && ext !== '.jpg' && ext !== '.gif' && ext !== '.jpeg'&& ext !== '.JPEG' && ext !== '.JPG' && ext !== '.GIF' && ext !== '.PNG' ) {
-        req.flash('error', 'Zły format zdjecia, zdjecie nie zostało zmienione.');
+        return res.status(400).send({ message:'Wrong image format. '});
       } else {
+        if(req.body.imageUrl){
+          var imageBuffer = utils.decodeBase64Image(req.body.imageUrl);
+          fs.writeFile(req.files[0].path, imageBuffer.data, function(err) { 
+            if(err)
+              return(err);
+            console.log('img saved succesfuly');
+          });
+        }
         updatedUser.foto=req.files[0].filename;
       }
     }

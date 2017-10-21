@@ -106,7 +106,7 @@ module.exports = function(io) {
 			fs.writeFile(req.files[0].path, imageBuffer.data, function(err) { 
 				if(err)
 					return(err);
-				console.log('doc saved succesfuly');
+				console.log('img saved succesfuly');
 				//var err = new Error('All fields required.'); 
 			});
 		}
