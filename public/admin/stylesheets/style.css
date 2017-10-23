@@ -51,7 +51,8 @@ a:active {
   border: 1px #ccc solid;	
   padding: 10px;
   border-radius: 15px;
-  min-width: 19rem;  //20rem
+  min-width: 19rem;  
+  /* 20rem */
 
 }
 
@@ -144,7 +145,7 @@ z-index: -1;
 
 .bg { 
     margin-top: 3rem;
-    background-image: url("/images/frontPage.jpg");
+    background-image: url("/admin/images/frontPage.jpg");
 
     /* Full height */
     height: 100%; 
