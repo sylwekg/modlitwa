@@ -17,7 +17,7 @@ var multer  = require('multer');
 
 var storage = multer.diskStorage({
   destination: function(req, file, callback) {
-    callback(null, 'public/images/')
+    callback(null, 'public/admin/images/')
   },
   filename: function(req, file, callback) {
     console.log(file)
@@ -234,7 +234,7 @@ router.post('/protected/messages/setRead', function(req, res) {
 // routes /api - NOT PROTECTED
 
 router.get('/avatars/:id', function(req, res) {
-    var filePath = path.join(__dirname, '../public/images/'+req.params.id);
+    var filePath = path.join(__dirname, '../public/admin/images/'+req.params.id);
     return res.sendFile(filePath,function (err) {
         if (err) {
           console.log(err.message);

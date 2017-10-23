@@ -11,7 +11,7 @@ var mid = require('../middleware/login');
 
 var storage = multer.diskStorage({
 	destination: function(req, file, callback) {
-		callback(null, 'public/images/')
+		callback(null, 'public/admin/images/')
 	},
 	filename: function(req, file, callback) {
 		console.log(file)
@@ -193,7 +193,7 @@ router.get('/delete/:id', mid.requiresAdmin, function(req, res, next) {
 
 			  			var foto=group.foto;
 			  			if (foto !== "avatar.jpg") {
-			  			 	fs.unlink('public/images/'+foto, (err) => {
+			  			 	fs.unlink('public/admin/images/'+foto, (err) => {
 			  					if (err) return next(err);
 			  					console.log('zdjecie skasowane');
 			  				});
