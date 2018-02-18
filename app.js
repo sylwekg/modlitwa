@@ -35,7 +35,8 @@ if (process.env.NODE_ENV == 'test') {
 }
 else {
     console.log('connecting to modlitwapomaga DB');
-    mongoose.connect('localhost:27017/modlitwapomaga');
+    // mongoose.connect('localhost:27017/modlitwapomaga');
+    mongoose.connect(`mongodb://sguser:${process.env.NODE_MNDB}@ds113738.mlab.com:13738/modlitwaonline`);
     db = mongoose.connection; 
 }
 
