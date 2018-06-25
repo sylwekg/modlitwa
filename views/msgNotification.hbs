@@ -9,7 +9,7 @@
 
   <div class="card profile" style="max-width: 30rem;" >
     <div class="card-block">
-      <h4 class="card-title text-center"> <strong>Powiadomienia msg </strong> </h4>
+      <h4 class="card-title text-center"> <strong>Msg Notification </strong> </h4>
       <div class="alert alert-info content" style="display: none;" id="response">
           <p class="response"></p>
       </div>
@@ -17,7 +17,7 @@
       <form id="msgForm" action="/" method="POST" >
         <div class="form-group">
           <input type="hidden" name="from" id="from" value={{currentUser}}>
-          <label for="user">Adresat:</label>
+          <label for="user">Recipient:</label>
           <div class="row">
             <div class="col-5">
               <select class="form-control form-control-sm" id="kto" name="kto">
@@ -42,11 +42,11 @@
             </div>
           </div>
         </div>
-        <label for="content">Wiadomość:</label>
+        <label for="content">Message:</label>
         <textarea class="form-control" id="content" name="content" rows="3"></textarea>
         <br>
         <div class="justify">
-          <button type="submit" class="btn btn-outline-danger">Wyslij wiadomość</button>
+          <button type="submit" class="btn btn-outline-danger">Send message</button>
           <input type="button" class="btn btn-outline-primary" value="Nowa" style="margin-left: 15px;" onclick="location.reload()">
         </div>
       </form>

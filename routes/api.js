@@ -157,7 +157,7 @@ router.get('/protected/groups/:id', function(req, res) {
     else {
         Group
         .findById(req.params.id) 
-        .populate('opiekun')
+        .populate('manager')
         .exec( function(err, group) {
           if(err)
             return res.status(400).send({ message:err.message });

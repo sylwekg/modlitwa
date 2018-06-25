@@ -614,7 +614,7 @@ module.exports = function(io) {
 		  		else  {
 				  	Group
 				  	.find()
-				  	.populate('opiekun')
+				  	.populate('manager')
 				  	.exec( function(err, groups) {
 				  		if(err)
 				  			return next(err);

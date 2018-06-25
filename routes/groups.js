@@ -28,7 +28,7 @@ router.get('/', mid.requiresOpiekun, function(req, res, next) {
 	var messages = req.flash('error');
   	Group
   	.find()
-  	.populate('opiekun')
+  	.populate('manager')
   	.exec( function(err, docs) {
   		if(err)
   			return next(err);
@@ -50,7 +50,7 @@ router.get('/profile/:id', mid.requiresOpiekun, function(req, res, next) {
 		else {
 		  	Group
 		  	.findById(req.params.id) 
-		  	.populate('opiekun')
+		  	.populate('manager')
 		  	.exec( function(err, group) {
 		  		if(err)
 		  			return next(err);
@@ -95,7 +95,7 @@ router.post('/add', mid.requiresAdmin, upload.single('foto'), function(req, res,
 
 	var newGroup = new Group({
 	  	name: req.body.groupName,
-	  	opiekun: req.body.opiekun,
+	  	manager: req.body.manager,
 	  	foto: foto,
 	    joinDate: new Date().getTime()
 		});
@@ -123,7 +123,7 @@ router.get('/edit/:id', mid.requiresAdmin, function(req, res, next) {
 		else {
 		  	Group
 		  	.findById(req.params.id) 
-		  	.populate('opiekun')
+		  	.populate('manager')
 		  	.exec( function(err, group) {
 		  		if(err)
 		  			return next(err);
@@ -145,7 +145,7 @@ router.post('/edit/:id', mid.requiresAdmin, upload.single('foto'), function(req,
   		if(err)
   			return next(err);
   		else {
-  			group.opiekun=req.body.opiekun;
+  			group.manager=req.body.manager;
   			group.name=req.body.groupName;
   			group.updateDate= new Date().getTime();
 

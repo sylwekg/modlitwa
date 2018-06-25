@@ -49,14 +49,14 @@ var userSchema = new mongoose.Schema({
     facebookId: {
         type: String
     },
-    // role: aplikant < user < opiekun < admin
+    // role: aplikant < user < manager < admin
     // aplikant widzi tylko swoj profil, swoje dane czeka na przyjecie do grupy
     // user widzi swoją grupe
-    // opiekun widzi swoją grupe, moze zmieniac dane osob w swojej grupie
+    // manager widzi swoją grupe, moze zmieniac dane osob w swojej grupie
     // admin moze wszystko
     role: {
         type: String,
-        default: "aplikant"
+        default: "requester"
     },
     messages: [{
         from: Schema.Types.ObjectId,

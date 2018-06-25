@@ -37,7 +37,7 @@
 	  	  </div> --}}
 
 		  <div class="form-group row">
-			  <label for="name" class="col-2 col-form-label">Imie/Naz</label>
+			  <label for="name" class="col-2 col-form-label">Name</label>
 			  <div class="col-10">
 			    <input class="form-control" type="text" placeholder="" id="name" name="name" required>
 			  </div>
@@ -58,7 +58,7 @@
 		  </div>
 
 		  <div class="form-group row">
-			  <label for="tajemnica" class="col-2 col-form-label">Tajemnica</label>
+			  <label for="tajemnica" class="col-2 col-form-label">Task</label>
 			  <div class="col-10">
 			  	<select class="form-control" id="tajemnica" name="tajemnica">
 				  	{{# each tajemnice}}
@@ -69,10 +69,10 @@
 		  </div> 
 
 		  <div class="form-group row">
-			  <label for="grupa" class="col-2 col-form-label">Grupa</label>
+			  <label for="grupa" class="col-2 col-form-label">Group</label>
 			  <div class="col-10">
 			  	<select class="form-control" id="grupa" name="grupa">
-				  	  <option value=0>bez grupy</option>
+				  	  <option value=0>no group</option>
 				  	{{# each grupy}}
 				      <option value={{_id}}>{{name}}</option>
 				    {{/each}}

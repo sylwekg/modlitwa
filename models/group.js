@@ -12,7 +12,7 @@ var groupSchema = new mongoose.Schema({
         type: String
     },  
 
-    opiekun:{ type: Schema.Types.ObjectId, ref: 'User' },   
+    manager:{ type: Schema.Types.ObjectId, ref: 'User' },   
 
     updateDate: {
         type: Date, 

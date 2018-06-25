@@ -12,10 +12,10 @@
     
     <div class="card-block">
 
-      <h4 class="card-title text-center"> <strong>Zmiana tajemnic</strong> </h4><br>
+      <h4 class="card-title text-center"> <strong>Change task</strong> </h4><br>
  
       <div class="form-group row">
-        <label for="date" class="col-4 col-form-label">Planowa data</label>
+        <label for="date" class="col-4 col-form-label">Planned date</label>
         <div class="col-8">
           <input class="form-control" type="datetime-local" id="date" name="date" value="{{ISODate data.dataZmiany}}" required>
         </div>
@@ -24,14 +24,14 @@
       <input type="hidden" name="offset" id="timeOffset">
 
       <div class="form-group row">
-        <label for="powtarzaj" class="col-4 col-form-label">Powtarzaj</label>
+        <label for="powtarzaj" class="col-4 col-form-label">Repeat</label>
         <div class="col-8">
           <select class="form-control" id="powtarzaj" name="powtarzaj">
             
-            <option value=0 {{sel 0 data.powtarzaj}}>nie powtarzaj</option>
-            <option value=1 {{sel 1 data.powtarzaj}}>co tydzien</option>
-            <option value=2 {{sel 2 data.powtarzaj}}>co miesiąc</option>
-            <option value=3 {{sel 3 data.powtarzaj}}>co kwartał</option>
+            <option value=0 {{sel 0 data.powtarzaj}}>do not repeat</option>
+            <option value=1 {{sel 1 data.powtarzaj}}>every week</option>
+            <option value=2 {{sel 2 data.powtarzaj}}>every month</option>
+            <option value=3 {{sel 3 data.powtarzaj}}>every quarter</option>
           </select>
         </div>
       </div> 
@@ -44,7 +44,7 @@
             <input id="powiadomienieEmail" type="checkbox" class="custom-control-input" name="powiadomienieEmail" >
           {{/if}}
           <span class="custom-control-indicator"></span>
-          <span class="custom-control-description">Powiadomienie email w dniu zmiany</span>
+          <span class="custom-control-description">Notification e-mail at the day of change</span>
         </label>
       
       <div></div> 
@@ -53,7 +53,7 @@
      <br><br>
       
       <div class="justify">
-        <button type="submit" class="btn btn-outline-success" id="zapisz">Zapisz</button>
+        <button type="submit" class="btn btn-outline-success" id="zapisz">Save</button>
         <button type="button" class="btn btn-outline-danger" onclick="javascript:location.href='/admin/users/zmianaTajemnic/now'" >Zmień teraz</button>
       </div>
         {{!-- <button type="button" onclick="javascript:location.href='/'" class="btn btn-outline-warning ">test</button> --}}

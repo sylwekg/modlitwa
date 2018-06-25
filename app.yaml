@@ -1,0 +1,12 @@
+runtime: nodejs8
+
+handlers:
+- url: /.*
+  script: auto
+
+env_variables:
+  MAILING_USER: "messaging.system@o2.pl"
+  MAILING_USER_PASSWORD: "Qwerty123"
+  FACEBOOK_APP_ID: "434203676933381"
+  FACEBOOK_APP_SECRET: "d6cfc4ea15e64d808fcc827a65ed8601"
+  NODE_MNDB: "sguser"

@@ -1,6 +1,6 @@
 
 var User = require('../models/user');
-var rolesDef=['aplikant','user','opiekun','admin'];
+var rolesDef=['requester','user','manager','admin'];
 
 
 
@@ -66,7 +66,7 @@ function requiresUser(req, res, next) {
 }
 
 function requiresOpiekun(req, res, next) {
-    checkUser(req,'opiekun', (err,succes) => {
+    checkUser(req,'manager', (err,succes) => {
         if(err){
             req.flash('error', err.message);
             return res.redirect('/');
@@ -78,7 +78,7 @@ function requiresOpiekun(req, res, next) {
 
 function requiresAplikant(req, res, next) {
     console.log('MIDDLEWARE req.params:',req.params);
-    checkUser(req,'aplikant', (err,succes) => {
+    checkUser(req,'requester', (err,succes) => {
         if(err){
             req.flash('error', err.message);
             return res.redirect('/');
@@ -101,7 +101,7 @@ function profileCrossCheck(req, res, next) {
         }
         else {
             if(
-                (((user.role=="aplikant")||(user.role=="user")||(user.role=="user"))&&(req.params.id==user.id))
+                (((user.role=="requester")||(user.role=="user")||(user.role=="user"))&&(req.params.id==user.id))
                 ||(user.role=="admin")) {
                 return next();
             }
